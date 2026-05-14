@@ -1,8 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  transpilePackages: ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
 };
 
 export default nextConfig;

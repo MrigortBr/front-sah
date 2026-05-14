@@ -1,29 +1,18 @@
-// LoginPage.jsx
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
-import HeroPanel from "@/components/HeroPanel/page";
-import LoginPanel from "@/components/LoginPanel/page";
-import styled from "styled-components";
-
-export default function LoginPage() {
-    return (
-        <Container>
-            <HeroPanel />
-            <LoginPanel />
-        </Container>
-    );
+export default function RootPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(isAuthenticated() ? '/home' : '/login');
+  }, [router]);
+  return (
+    <Box display="flex" alignItems="center" justifyContent="center" minHeight="100vh">
+      <CircularProgress color="primary" />
+    </Box>
+  );
 }
-
-const Container = styled.div`
-    width: 100%;
-
-    height: 100vh;
-
-    max-height: 100vh;
-
-    display: grid;
-    grid-template-columns: 1fr 30rem;
-
-    @media (max-width: 980px) {
-        grid-template-columns: 1fr;
-    }
-`;

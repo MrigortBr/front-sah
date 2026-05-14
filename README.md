@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SAH — front-sah
 
-## Getting Started
+Sistema de Acompanhamento de Habilitações · Next.js 16 + MUI v6 + TypeScript
 
-First, run the development server:
+---
+
+## Setup
 
 ```bash
+# 1. Instalar dependências
+npm install
+
+# 2. Configurar variável de ambiente
+cp .env.local.example .env.local
+# Editar NEXT_PUBLIC_API_URL se necessário
+
+# 3. Rodar em desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estrutura de pastas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── layout.tsx               # Root layout (MUI providers + AuthProvider)
+│   ├── page.tsx                 # Redirect /login ou /home
+│   ├── login/
+│   │   └── page.tsx             # Tela de login
+│   └── (app)/                   # Grupo autenticado (redireciona para /login se não logado)
+│       ├── layout.tsx           # FormDataProvider + guard de auth
+│       ├── home/page.tsx        # Home com os dois módulos
+│       ├── habilitacoes/page.tsx
+│       └── propostas/
+│           ├── page.tsx         # Lista de propostas
+│           └── cadastro/page.tsx # Formulário completo
+├── components/layout/
+│   └── Topbar.tsx               # Topbar com usuário do JWT
+├── contexts/
+│   ├── AuthContext.tsx          # user, login(), logout()
+│   └── FormDataContext.tsx      # GET /form/list — tipoHabilitacao, diligencia, technicians, cnes
+├── lib/
+│   ├── api.ts                   # Axios instance (base URL + Authorization header)
+│   └── auth.ts                  # Mock login, JWT decode, token storage
+├── theme/
+│   └── theme.ts                 # MUI theme com paleta verde/amarela do SAH
+└── types/
+    └── index.ts                 # Todos os tipos TypeScript
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Decisões de arquitetura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Tópico | Decisão |
+|---|---|
+| **Framework** | Next.js 16 App Router |
+| **UI** | MUI v6 + emotion |
+| **Auth** | Mock local — token JWT falso em `localStorage` |
+| **API** | `axios` com interceptor de Authorization |
+| **User no header** | Decodificado do JWT com `jwt-decode` |
+| **Situações** | Estáticas (não consomem API) |
+| **Técnicos** | Via `GET /form/list` → `data.technicians` |
+| **Diligências** | Via `GET /form/list` → `data.info.diligencia` |
+| **CNES lookup** | Mock local (CNES_DB no próprio componente) |
+| **Data de trabalho** | `DatePicker` habilitado com `@mui/x-date-pickers` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## TODO — integrar com API real
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1. Login real
+Em `src/lib/auth.ts`, substituir o bloco mock em `login()`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```ts
+// ANTES (mock)
+await new Promise((r) => setTimeout(r, 1000));
+const mockToken = buildMockJwt({ ... });
+saveToken(mockToken);
+
+// DEPOIS (real)
+const res = await api.post<{ token: string }>('/login', credentials);
+saveToken(res.data.token);
+```
+
+### 2. Salvar proposta
+Em `src/app/(app)/propostas/cadastro/page.tsx`:
+- `handleSaveDraft()` → `PUT /form/:id` com `options.existing: true`
+- `handleSubmit()` → `PUT /form/:id` com payload completo
+
+### 3. CNES real
+Substituir `CNES_DB` em `cadastro/page.tsx` por chamada à API do DATASUS
+ou endpoint próprio quando disponível.
+
+---
+
+## Variáveis de ambiente
+
+| Variável | Descrição | Default |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | Base URL da API | `http://localhost:2000` |
