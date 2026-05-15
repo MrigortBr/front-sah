@@ -1,42 +1,71 @@
-'use client';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import type { AuthUser, LoginCredentials } from '@/types';
-import { getUserFromToken, isAuthenticated, login as authLogin, logout as authLogout } from '@/lib/auth';
+"use client";
+
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { PerfilUsuario, Usuario } from "@/types";
 
 interface AuthContextValue {
-  user:    AuthUser | null;
-  loading: boolean;
-  login:   (credentials: LoginCredentials) => Promise<void>;
-  logout:  () => void;
+  user: Usuario | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (login: string, senha: string, perfil: PerfilUsuario) => Promise<void>;
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+// ─── Mock users — substituir por chamada real quando a API tiver auth ──────────
+
+const MOCK_USERS: Record<string, Usuario> = {
+  "tecnico.decan": {
+    id: 1,
+    nome: "Tayana",
+    sobrenome: "Pinheiro",
+    perfil: "tecnico",
+    setor: "DECAN",
+  },
+  "gestor.decan": {
+    id: 2,
+    nome: "Carlos",
+    sobrenome: "Mendes",
+    perfil: "gestor",
+    setor: "DECAN",
+  },
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [user,    setUser]    = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<Usuario | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isAuthenticated()) setUser(getUserFromToken());
-    setLoading(false);
+    const stored = localStorage.getItem("sah_user");
+    if (stored) setUser(JSON.parse(stored));
+    setIsLoading(false);
   }, []);
 
-  async function login(credentials: LoginCredentials) {
-    await authLogin(credentials);
-    setUser(getUserFromToken());
-    router.push('/home');
-  }
+  const login = useCallback(
+    async (loginStr: string, _senha: string, _perfil: PerfilUsuario) => {
+      // TODO: trocar por chamada real à API quando endpoint de auth estiver pronto
+      await new Promise((r) => setTimeout(r, 800)); // simula latência
 
-  function logout() {
-    authLogout();
+      const key = loginStr.toLowerCase();
+      const mockUser = MOCK_USERS[key] ?? MOCK_USERS["tecnico.decan"];
+      mockUser.perfil = _perfil;
+
+      localStorage.setItem("sah_user", JSON.stringify(mockUser));
+      // localStorage.setItem("sah_token", "mock-jwt-token"); // descomente quando tiver JWT real
+      setUser(mockUser);
+    },
+    []
+  );
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("sah_user");
+    localStorage.removeItem("sah_token");
     setUser(null);
-    router.push('/login');
-  }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -44,6 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

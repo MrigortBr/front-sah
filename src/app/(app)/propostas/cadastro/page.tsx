@@ -1,319 +1,593 @@
-'use client';
-import React, { useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Topbar from '@/components/layout/Topbar';
-import { useFormData } from '@/contexts/FormDataContext';
-import { SAH_COLORS } from '@/theme/theme';
-import type { CadastroFormValues, CnesData } from '@/types';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import InputAdornment from '@mui/material/InputAdornment';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ptBR } from 'date-fns/locale/pt-BR';
-import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-// import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+"use client";
 
-// ── CNES mock database ────────────────────────────────────────
-const CNES_DB: Record<string, CnesData> = {
-  '2084163': { nome: 'Hospital Estadual de Diadema – Hospital Serraria', cnpj: '46.374.500/0136-87', natureza: 'PÚBLICA',                     gestao: 'Estadual',  uf: 'SP', ibge_mun: '351380', municipio: 'Diadema',        regiao: 'GRANDE ABC',           ibge_reg: '35015', macro: 'RRAS1'  },
-  '2080273': { nome: 'Hospital Estadual Mário Covas de Santo André',      cnpj: '46.374.500/0144-97', natureza: 'PÚBLICA',                     gestao: 'Estadual',  uf: 'SP', ibge_mun: '354780', municipio: 'Santo André',    regiao: 'GRANDE ABC',           ibge_reg: '35015', macro: 'RRAS1'  },
-  '2077531': { nome: 'A C Camargo Cancer Center',                          cnpj: '60.961.968/0001-06', natureza: 'PRIVADA SEM FINS LUCRATIVOS', gestao: 'Municipal', uf: 'SP', ibge_mun: '355030', municipio: 'São Paulo',      regiao: 'SÃO PAULO',            ibge_reg: '35016', macro: 'RRAS6'  },
-  '2078015': { nome: 'HC da FMUSP – Hospital das Clínicas São Paulo',      cnpj: '56.577.059/0001-00', natureza: 'PRIVADA SEM FINS LUCRATIVOS', gestao: 'Estadual',  uf: 'SP', ibge_mun: '355030', municipio: 'São Paulo',      regiao: 'SÃO PAULO',            ibge_reg: '35016', macro: 'RRAS6'  },
-  '2083086': { nome: 'Hospital Amaral Carvalho',                           cnpj: '50.753.755/0001-35', natureza: 'PRIVADA SEM FINS LUCRATIVOS', gestao: 'Estadual',  uf: 'SP', ibge_mun: '352530', municipio: 'Jaú',           regiao: 'VALE DAS CACHOEIRAS',  ibge_reg: '35133', macro: 'RRAS13' },
-  '2600536': { nome: 'Hospital Regional de Araguaína',                     cnpj: '25.053.117/0053-95', natureza: 'PÚBLICA',                     gestao: 'Estadual',  uf: 'TO', ibge_mun: '170210', municipio: 'Araguaína',     regiao: 'MÉDIO NORTE ARAGUAIA', ibge_reg: '17001', macro: 'Macrorregião Norte' },
+import React, { CSSProperties, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+
+const V = {
+  verde: "#1B5E3B", verdeMed: "#2E7D52", verdeCla: "#3DA06A", verdeBg: "#EAF4EF",
+  amarelo: "#FFCD00", amarBg: "#FFF9E0", azul: "#1565C0", azulCla: "#E3EEFF",
+  laranja: "#E65100", larBg: "#FFF3E0", cinzaF: "#F4F6F4", cinzaB: "#E4EBE6",
+  cinzaT: "#6B7B6E", texto: "#1A2E20", erro: "#C0392B",
 };
 
-// ── Anchor sections ───────────────────────────────────────────
-const SECTIONS = [
-  { id: 'sec-estabelecimento', label: 'Estabelecimento' },
-  { id: 'sec-habilitacao',     label: 'Habilitação Solicitada' },
-  { id: 'sec-historico',       label: 'Histórico de Habilitação' },
-  { id: 'sec-financeiro',      label: 'Dados Financeiros' },
-  { id: 'sec-tecnico',         label: 'Responsável Técnico' },
-  { id: 'sec-diligencia',      label: 'Documentação / Diligência' },
+// ── CNES mock DB (fiel ao HTML) ────────────────────────────────────────────────
+const CNES_DB: Record<string, { nome: string; cnpj: string; natureza: string; gestao: string; uf: string; ibge_mun: string; municipio: string; regiao: string; ibge_reg: string; macro: string }> = {
+  "2084163": { nome: "Hospital Estadual de Diadema – Hospital Serraria", cnpj: "46.374.500/0136-87", natureza: "PÚBLICA", gestao: "Estadual", uf: "SP", ibge_mun: "351380", municipio: "Diadema", regiao: "GRANDE ABC", ibge_reg: "35015", macro: "RRAS1" },
+  "2080273": { nome: "Hospital Estadual Mário Covas de Santo André", cnpj: "46.374.500/0144-97", natureza: "PÚBLICA", gestao: "Estadual", uf: "SP", ibge_mun: "354780", municipio: "Santo André", regiao: "GRANDE ABC", ibge_reg: "35015", macro: "RRAS1" },
+  "2077531": { nome: "A C Camargo Cancer Center", cnpj: "60.961.968/0001-06", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Municipal", uf: "SP", ibge_mun: "355030", municipio: "São Paulo", regiao: "SÃO PAULO", ibge_reg: "35016", macro: "RRAS6" },
+  "2078015": { nome: "HC da FMUSP – Hospital das Clínicas São Paulo", cnpj: "56.577.059/0001-00", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Estadual", uf: "SP", ibge_mun: "355030", municipio: "São Paulo", regiao: "SÃO PAULO", ibge_reg: "35016", macro: "RRAS6" },
+  "2083086": { nome: "Hospital Amaral Carvalho", cnpj: "50.753.755/0001-35", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Estadual", uf: "SP", ibge_mun: "352530", municipio: "Jaú", regiao: "VALE DAS CACHOEIRAS", ibge_reg: "35133", macro: "RRAS13" },
+  "2066572": { nome: "Hospital Heliópolis – UGA I", cnpj: "46.374.500/0115-52", natureza: "PÚBLICA", gestao: "Estadual", uf: "SP", ibge_mun: "355030", municipio: "São Paulo", regiao: "SÃO PAULO", ibge_reg: "35016", macro: "RRAS6" },
+  "2600536": { nome: "Hospital Regional de Araguaína", cnpj: "25.053.117/0053-95", natureza: "PÚBLICA", gestao: "Estadual", uf: "TO", ibge_mun: "170210", municipio: "Araguaína", regiao: "MÉDIO NORTE ARAGUAIA", ibge_reg: "17001", macro: "Macrorregião Norte" },
+  "2058790": { nome: "Hospital Municipal Dr. Waldemar Tebaldi", cnpj: "45.781.176/0001-66", natureza: "PÚBLICA", gestao: "Municipal", uf: "SP", ibge_mun: "350160", municipio: "Americana", regiao: "REGIÃO METROPOLITANA DE CAMPINAS", ibge_reg: "35072", macro: "RRAS15" },
+  "2784602": { nome: "Hospital Augusto de Oliveira Camargo", cnpj: "60.499.365/0002-15", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Municipal", uf: "SP", ibge_mun: "352050", municipio: "Indaiatuba", regiao: "REGIÃO METROPOLITANA DE CAMPINAS", ibge_reg: "35072", macro: "RRAS15" },
+  "7400926": { nome: "Fundação Hospital Regional do Câncer", cnpj: "11.636.872/0001-67", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Estadual", uf: "SP", ibge_mun: "354140", municipio: "Presidente Prudente", regiao: "ALTA SOROCABANA", ibge_reg: "35112", macro: "RRAS11" },
+  "0000477": { nome: "Hospital Recife", cnpj: "00.000.000/0000-00", natureza: "PÚBLICA", gestao: "Municipal", uf: "PE", ibge_mun: "261606", municipio: "Recife", regiao: "Região I Recife", ibge_reg: "261", macro: "Macrorregião Recife" },
+};
+
+const DILIGENCIAS = [
+  "Deliberação CIB",
+  "Link do Plano de Atenção para o Diagnóstico e o Tratamento do Câncer",
+  "Relatório de vistoria realizada pela Vigilância Sanitária",
+  "Relatório do gestor sobre a necessidade dos serviços de saúde",
+  "Termo de compromisso",
+  "Cálculo de previsão financeira",
+  "Declaração do responsável técnico médico",
+  "Licença de operação emitida pela CNEN",
+  "Formulário de Classificação e Verificação dos critérios mínimos para habilitação",
+  "Parecer conclusivo do gestor",
+  "Licença Sanitária",
 ];
 
-const EMPTY_FORM: CadastroFormValues = {
-  cnes: '', nomeEstabelecimento: '', cnpj: '', naturezaJuridica: '', gestao: '',
-  uf: '', ibgeMunicipio: '', nomeMunicipio: '', regiaoSaude: '', ibgeRegiao: '', macrorregiao: '',
-  aceleradores: '', habilitacoesSelecionadas: [],
-  anoprimeiraHabilitacao: '', codigos1aAlteracao: '', ano1aAlteracao: '',
-  codigos2aAlteracao: '', ano2aAlteracao: '', codigos3aAlteracao: '',
-  tecnicoId: '', dataTrabalho: null, previsaoMensal: '',
-  diligenciasSelecionadas: [], observacoes: '',
-};
+const HAB_CHIPS = [
+  { cod: "17.04", nome: "Serviço Isolado de Radioterapia" },
+  { cod: "17.06", nome: "UNACON" },
+  { cod: "17.07", nome: "UNACON com Serviço de Radioterapia" },
+  { cod: "17.08", nome: "UNACON com Serviço de Hematologia" },
+  { cod: "17.09", nome: "UNACON com Serviço de Oncologia Pediátrica" },
+  { cod: "17.10", nome: "UNACON Exclusiva de Hematologia" },
+  { cod: "17.11", nome: "UNACON Exclusiva de Oncologia Pediátrica" },
+  { cod: "17.12", nome: "CACON" },
+  { cod: "17.13", nome: "CACON com Serviço de Oncologia Pediátrica" },
+  { cod: "17.14", nome: "Hospital Geral com Cirurgia Oncológica" },
+  { cod: "17.15", nome: "Serviço de Radioterapia de Complexo Hospitalar" },
+];
 
-function Section({ id, title, desc, dot, children }: { id: string; title: string; desc?: string; dot?: string; children: React.ReactNode }) {
+const STEPS = [
+  { n: 1, label: "Identificação do Processo", desc: "SAIPS, NUP, situação, diligência" },
+  { n: 2, label: "Impacto Financeiro", desc: "Mensal, anual, parcela única" },
+  { n: 3, label: "Localização", desc: "UF, município, região" },
+  { n: 4, label: "Estabelecimento", desc: "CNES, CNPJ, nome" },
+  { n: 5, label: "Habilitação", desc: "Código e tipo solicitado" },
+  { n: 6, label: "Histórico", desc: "Primeira hab. e alterações" },
+];
+
+const SITUACOES = ["Enviada ao MS", "Em análise", "Em diligência", "Rejeitada", "Rejeitada por não atendimento à diligência", "Aprovada", "Portaria Publicada", "Enviada ao DRAC", "Proposta excluída", "Proposta concluída"];
+const FINS = ["", "CHARR", "MAC", "FAEC", "MAC e FAEC", "Não há ônus para o MS"];
+const TECNICOS = ["Tayana.pinheiro", "Thaynara.souza", "Tatiana.rcardoso"];
+
+function FieldAuto({ label, value }: { label: string; value?: string }) {
   return (
-    <Box id={id} sx={{ bgcolor: '#fff', borderRadius: 2, border: `1px solid ${SAH_COLORS.cinzaB}`, p: '24px 28px', mb: 3, scrollMarginTop: '80px' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: desc ? .5 : 2.5 }}>
-        {dot && <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: dot, flexShrink: 0 }} />}
-        <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{title}</Typography>
-      </Box>
-      {desc && <Typography sx={{ fontSize: 12, color: SAH_COLORS.cinzaT, mb: 2.5 }}>{desc}</Typography>}
-      {children}
-    </Box>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: V.texto }}>{label}</label>
+      <input readOnly value={value ?? ""} style={{ fontFamily: "'Sora',sans-serif", fontSize: 13, color: V.cinzaT, background: "#f8fdf9", border: `1.5px solid ${V.cinzaB}`, borderRadius: 8, padding: "10px 14px", cursor: "not-allowed", width: "100%" }} />
+    </div>
   );
 }
 
-function FormGrid({ cols = 2, children }: { cols?: number; children: React.ReactNode }) {
-  return <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 2 }}>{children}</Box>;
+function Field({ label, req, hint, children }: { label: string; req?: boolean; hint?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: V.texto }}>
+        {label}{req && <span style={{ color: V.erro, marginLeft: 2 }}>*</span>}
+      </label>
+      {children}
+      {hint && <span style={{ fontSize: 11, color: V.cinzaT, lineHeight: 1.4 }}>{hint}</span>}
+    </div>
+  );
 }
 
+const inp = (extra?: CSSProperties): CSSProperties => ({
+  fontFamily: "'Sora',sans-serif", fontSize: 13, color: V.texto,
+  background: V.cinzaF, border: `1.5px solid ${V.cinzaB}`,
+  borderRadius: 8, padding: "10px 14px", outline: "none", width: "100%",
+  transition: "border-color .2s,background .2s,box-shadow .2s", ...extra,
+});
+
 export default function CadastroPage() {
-  const router       = useRouter();
-  const { data: fd } = useFormData();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const mainRef = useRef<HTMLDivElement>(null);
 
-  const [form,        setForm]        = useState<CadastroFormValues>(EMPTY_FORM);
+  const [step, setStep] = useState(1);
+
+  // Etapa 1
+  const [nup, setNup] = useState("");
+  const [situacao, setSituacao] = useState("Enviada ao MS");
+  const [tipoFin, setTipoFin] = useState("FAEC");
+  const [tecnico, setTecnico] = useState("Tayana.pinheiro");
+  const [portaria, setPortaria] = useState("");
+  const [diligSel, setDiligSel] = useState<string[]>([]);
+  const [dtSaips, setDtSaips] = useState("");
+  const [dtDecan, setDtDecan] = useState("");
+  const [dtDrac, setDtDrac] = useState("");
+
+  // Etapa 2
+  const [mensal, setMensal] = useState("");
+  const [parcela, setParcela] = useState("");
+  const anual = mensal ? (parseFloat(mensal.replace(/\./g, "").replace(",", ".")) * 12).toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : "";
+
+  // Etapa 3+4 (CNES)
+  const [cnesVal, setCnesVal] = useState("");
   const [cnesLoading, setCnesLoading] = useState(false);
-  const [cnesStatus,  setCnesStatus]  = useState<{ type: 'success' | 'warning' | 'idle'; msg: string }>({ type: 'idle', msg: '' });
-  const [cnesFound,   setCnesFound]   = useState(false);
-  const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
-  const [toast,       setToast]       = useState(false);
-  const cnesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [cnesData, setCnesData] = useState<typeof CNES_DB[string] | null>(null);
+  const [aceleradores, setAceleradores] = useState("");
 
-  function handleCnesInput(val: string) {
-    const v = val.replace(/\D/g, '').slice(0, 7);
-    setForm((f) => ({ ...f, cnes: v }));
-    setCnesFound(false);
-    setCnesStatus({ type: 'idle', msg: '' });
-    clearTimeout(cnesTimerRef.current ?? undefined);
+  // Etapa 5
+  const [habSel, setHabSel] = useState<string[]>([]);
 
-    if (v.length < 7) return;
+  // Etapa 6
+  const [histAno, setHistAno] = useState("");
+  const [histCod, setHistCod] = useState("");
+  const [alteracoes, setAlteracoes] = useState<{ ano: string; cod: string }[]>([]);
 
-    setCnesLoading(true);
-    setCnesStatus({ type: 'idle', msg: 'Consultando banco do CNES…' });
+  const [toast, setToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
 
-    cnesTimerRef.current = setTimeout(() => {
-      setCnesLoading(false);
-      const data = CNES_DB[v];
-      if (data) {
-        setForm((f) => ({ ...f, nomeEstabelecimento: data.nome, cnpj: data.cnpj, naturezaJuridica: data.natureza, gestao: data.gestao, uf: data.uf, ibgeMunicipio: data.ibge_mun, nomeMunicipio: data.municipio, regiaoSaude: data.regiao, ibgeRegiao: data.ibge_reg, macrorregiao: data.macro }));
-        setCnesFound(true);
-        setCnesStatus({ type: 'success', msg: '✓ Estabelecimento encontrado' });
-      } else {
-        setCnesFound(true);
-        setCnesStatus({ type: 'warning', msg: '⚠ CNES não encontrado — preencha manualmente.' });
+  // Scroll spy: atualiza step ativo conforme seções entram na viewport
+  useEffect(() => {
+    const sectionNums = [1, 2, 3, 4, 5, 6];
+    const onScroll = () => {
+      let active = 1;
+      for (const n of sectionNums) {
+        const el = document.getElementById(`sec-${n}`);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= 80) active = n;
       }
-    }, 900);
-  }
+      setStep(active);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  function toggleHab(codigo: string) {
-    setForm((f) => ({ ...f, habilitacoesSelecionadas: f.habilitacoesSelecionadas.includes(codigo) ? f.habilitacoesSelecionadas.filter((c) => c !== codigo) : [...f.habilitacoesSelecionadas, codigo] }));
-  }
+  const initials = user ? `${user.nome[0]}${user.sobrenome[0]}` : "TP";
+  const userName = user ? `${user.nome} ${user.sobrenome}` : "Tayana Pinheiro";
 
-  function toggleDiligencia(id: number) {
-    setForm((f) => ({ ...f, diligenciasSelecionadas: f.diligenciasSelecionadas.includes(id) ? f.diligenciasSelecionadas.filter((d) => d !== id) : [...f.diligenciasSelecionadas, id] }));
-  }
+  // Restaura rascunho salvo
+  useEffect(() => {
+    const raw = localStorage.getItem("sah_rascunho");
+    if (!raw) return;
+    try {
+      const d = JSON.parse(raw);
+      if (d.nup !== undefined) setNup(d.nup);
+      if (d.situacao) setSituacao(d.situacao);
+      if (d.tipoFin) setTipoFin(d.tipoFin);
+      if (d.tecnico) setTecnico(d.tecnico);
+      if (d.portaria !== undefined) setPortaria(d.portaria);
+      if (d.diligSel) setDiligSel(d.diligSel);
+      if (d.dtSaips !== undefined) setDtSaips(d.dtSaips);
+      if (d.dtDecan !== undefined) setDtDecan(d.dtDecan);
+      if (d.dtDrac !== undefined) setDtDrac(d.dtDrac);
+      if (d.mensal !== undefined) setMensal(d.mensal);
+      if (d.parcela !== undefined) setParcela(d.parcela);
+      if (d.cnesVal) { setCnesVal(d.cnesVal); if (CNES_DB[d.cnesVal]) setCnesData(CNES_DB[d.cnesVal]); }
+      if (d.aceleradores !== undefined) setAceleradores(d.aceleradores);
+      if (d.habSel) setHabSel(d.habSel);
+      if (d.histAno !== undefined) setHistAno(d.histAno);
+      if (d.histCod !== undefined) setHistCod(d.histCod);
+      if (d.alteracoes) setAlteracoes(d.alteracoes);
+    } catch { /* ignora rascunho corrompido */ }
+  }, []);
 
-  function scrollToSection(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setActiveSection(id);
-  }
-
-  function handleScroll() {
-    for (const sec of [...SECTIONS].reverse()) {
-      const el = document.getElementById(sec.id);
-      if (el && el.getBoundingClientRect().top <= 100) { setActiveSection(sec.id); return; }
-    }
-  }
-
-  function handleSubmit() {
-    // TODO: PUT /form/:id
+  const salvarRascunho = () => {
+    const data = {
+      nup, situacao, tipoFin, tecnico, portaria, diligSel,
+      dtSaips, dtDecan, dtDrac, mensal, parcela,
+      cnesVal, aceleradores, habSel, histAno, histCod, alteracoes,
+    };
+    localStorage.setItem("sah_rascunho", JSON.stringify(data));
+    setToastMsg("💾 Rascunho salvo!");
     setToast(true);
-    setTimeout(() => router.push('/propostas'), 1500);
-  }
+    setTimeout(() => setToast(false), 2000);
+  };
 
-  const habConsolidado = form.habilitacoesSelecionadas
-    .map((c) => { const t = fd?.info.tipoHabilitacao.find((h) => h.codigo === c); return t ? `${c} — ${t.descricao}` : c; })
-    .join(' | ');
+  // CNES lookup
+  const onCnesInput = (val: string) => {
+    setCnesVal(val);
+    setCnesData(null);
+    if (val.length < 7) return;
+    setCnesLoading(true);
+    setTimeout(() => {
+      const found = CNES_DB[val] ?? null;
+      setCnesData(found);
+      setCnesLoading(false);
+    }, 600);
+  };
+
+  // Toggle diligência
+  const toggleDil = (d: string) =>
+    setDiligSel((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
+
+  // Toggle hab
+  const toggleHab = (cod: string) =>
+    setHabSel((prev) => prev.includes(cod) ? prev.filter((x) => x !== cod) : [...prev, cod]);
+
+  const habNomes = habSel.map((c) => HAB_CHIPS.find((h) => h.cod === c)?.nome ?? "").join(", ");
+
+  const submitForm = () => {
+    localStorage.removeItem("sah_rascunho");
+    setToastMsg("✅ Proposta enviada com sucesso!");
+    setToast(true);
+    setTimeout(() => { setToast(false); router.push("/propostas"); }, 1800);
+  };
+
+  const sectionStyle: CSSProperties = {
+    background: "#fff", borderRadius: 12, border: `1px solid ${V.cinzaB}`,
+    padding: "28px 32px", marginBottom: 20, scrollMarginTop: 72,
+  };
+
+  const grid2: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 };
+  const grid3: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Topbar subtitle="Nova Proposta" />
-        <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+    <>
 
-          {/* ── Anchor sidebar ──────────────── */}
-          <Box component="aside" sx={{ width: 220, flexShrink: 0, bgcolor: '#fff', borderRight: `1px solid ${SAH_COLORS.cinzaB}`, display: 'flex', flexDirection: 'column', py: 2.5, overflowY: 'auto' }}>
-            <Typography sx={{ fontSize: 10, fontWeight: 600, color: SAH_COLORS.cinzaT, textTransform: 'uppercase', letterSpacing: '.1em', px: 2.5, mb: 1 }}>
-              Etapas de Preenchimento
-            </Typography>
-            <List dense disablePadding sx={{ px: 1.5 }}>
-              {SECTIONS.map((s, i) => (
-                <ListItemButton key={s.id} selected={activeSection === s.id} onClick={() => scrollToSection(s.id)} sx={{ px: 1.5, gap: 1.25 }}>
-                  <Box sx={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'monospace', bgcolor: activeSection === s.id ? SAH_COLORS.verde : SAH_COLORS.cinzaF, color: activeSection === s.id ? '#fff' : SAH_COLORS.cinzaT }}>
-                    {i + 1}
-                  </Box>
-                  <ListItemText primary={s.label} primaryTypographyProps={{ fontSize: 12.5 }} />
-                </ListItemButton>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Sora',sans-serif" }}>
+
+        {/* ── Topbar ── */}
+        <nav style={{ background: V.verde, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", height: 56, flexShrink: 0, position: "sticky", top: 0, zIndex: 100 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 32, height: 32, background: V.amarelo, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 700, color: V.verde }}>MS</div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>SAH · Nova Proposta</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,.5)", letterSpacing: ".05em", textTransform: "uppercase" }}>Acompanhamento de Habilitações</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "#fff" }}>{initials}</div>
+              <div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,.9)", fontWeight: 600 }}>{userName}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,.45)", textTransform: "uppercase", letterSpacing: ".06em" }}>Técnico · DECAN</div>
+              </div>
+            </div>
+            <button className="btn-logout-h" onClick={() => router.push("/propostas")}
+              style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)", color: "rgba(255,255,255,.7)", fontFamily: "'Sora',sans-serif", fontSize: 11, padding: "5px 12px", borderRadius: 6, cursor: "pointer", transition: "all .2s" }}>
+              ← Propostas
+            </button>
+          </div>
+        </nav>
+
+        {/* ── Layout ── */}
+        <div style={{ display: "flex", alignItems: "flex-start" }}>
+
+          {/* Form Sidebar */}
+          <div style={{ width: 220, flexShrink: 0, background: "#fff", borderRight: `1px solid ${V.cinzaB}`, padding: "20px 0", position: "sticky", top: 56, height: "calc(100vh - 56px)", overflowY: "auto" }}>
+            <div style={{ padding: "16px 20px 12px", borderBottom: `1px solid ${V.cinzaB}`, marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 2 }}>Nova proposta</div>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>Etapas de preenchimento</div>
+            </div>
+            <div style={{ padding: "0 12px" }}>
+              {STEPS.map((s) => (
+                <div key={s.n} className="step-item-h" onClick={() => {
+                  setStep(s.n);
+                  document.getElementById(`sec-${s.n}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }} style={{
+                  display: "flex", alignItems: "flex-start", gap: 12,
+                  padding: 10, borderRadius: 8, marginBottom: 4, cursor: "pointer",
+                  background: step === s.n ? V.verdeBg : "transparent",
+                  transition: "all .15s",
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: "50%",
+                    border: `2px solid ${step === s.n ? V.verdeMed : V.cinzaB}`,
+                    background: step === s.n ? V.verdeMed : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 700,
+                    color: step === s.n ? "#fff" : V.cinzaT,
+                    flexShrink: 0, marginTop: 1,
+                  }}>{s.n}</div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: step === s.n ? V.verde : V.cinzaT, lineHeight: 1.3 }}>{s.label}</div>
+                    <div style={{ fontSize: 10, color: V.cinzaT, marginTop: 2 }}>{s.desc}</div>
+                  </div>
+                </div>
               ))}
-            </List>
-          </Box>
+            </div>
+          </div>
 
-          {/* ── Form ────────────────────────── */}
-          <Box component="main" onScroll={handleScroll} sx={{ flex: 1, overflowY: 'auto', p: '32px 36px', bgcolor: SAH_COLORS.cinzaF }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3.5 }}>
-              <Box>
-                <Button size="small" startIcon={<ArrowBackIcon />} onClick={() => router.push('/propostas')} sx={{ color: SAH_COLORS.cinzaT, p: 0, mb: .75, fontSize: 12, '&:hover': { bgcolor: 'transparent', color: SAH_COLORS.verde } }}>
-                  Voltar às propostas
-                </Button>
-                <Typography variant="h5">Cadastrar Nova Proposta</Typography>
-                <Typography sx={{ fontSize: 13, color: SAH_COLORS.cinzaT, mt: .375 }}>
-                  Preencha os dados abaixo para registrar uma nova proposta de habilitação.
-                </Typography>
-              </Box>
-            </Box>
+          {/* Form Main */}
+          <div ref={mainRef} style={{ flex: 1, padding: "32px 36px", background: V.cinzaF }}>
 
-            {/* 1. Estabelecimento */}
-            <Section id="sec-estabelecimento" title="Estabelecimento" dot={SAH_COLORS.verde}>
-              <Box sx={{ bgcolor: SAH_COLORS.cinzaF, border: `1.5px solid ${SAH_COLORS.cinzaB}`, borderRadius: 2, p: '18px 20px', mb: 2.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2.5 }}>
-                  <TextField label="CNES *" size="small" value={form.cnes} onChange={(e) => handleCnesInput(e.target.value)} placeholder="0000000" sx={{ width: 180 }} helperText="7 dígitos — dados preenchidos automaticamente"
-                    slotProps={{ input: { endAdornment: cnesLoading ? <InputAdornment position="end"><CircularProgress size={14} /></InputAdornment> : cnesStatus.type === 'success' ? <InputAdornment position="end"><CheckCircleOutlineIcon sx={{ color: SAH_COLORS.verdeMed, fontSize: 18 }} /></InputAdornment> : undefined } }}
-                  />
-                  <Typography sx={{ fontSize: 12, pb: 3.5, color: cnesStatus.type === 'success' ? SAH_COLORS.verdeMed : cnesStatus.type === 'warning' ? SAH_COLORS.laranja : SAH_COLORS.cinzaT, fontWeight: cnesStatus.type !== 'idle' ? 600 : 400 }}>
-                    {cnesStatus.msg}
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ opacity: cnesFound ? 1 : .4, pointerEvents: cnesFound ? 'auto' : 'none', transition: 'opacity .3s' }}>
-                <Typography sx={{ fontSize: 11, fontWeight: 600, color: SAH_COLORS.cinzaT, textTransform: 'uppercase', letterSpacing: '.08em', mb: 2, mt: 1 }}>Dados do Estabelecimento</Typography>
-                <FormGrid cols={1}><TextField label="Nome do Estabelecimento" value={form.nomeEstabelecimento} slotProps={{ input: { readOnly: true } }} size="small" /></FormGrid>
-                <Box mt={2} />
-                <FormGrid>
-                  <TextField label="CNPJ"             value={form.cnpj}             slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="Natureza Jurídica" value={form.naturezaJuridica}  slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="Gestão"            value={form.gestao}            slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="Nº Aceleradores / Cobaltos" type="number" value={form.aceleradores} onChange={(e) => setForm((f) => ({ ...f, aceleradores: e.target.value === '' ? '' : Number(e.target.value) }))} size="small" helperText="Único campo a preencher manualmente" slotProps={{ htmlInput: { min: 0 } }} />
-                </FormGrid>
-                <Typography sx={{ fontSize: 11, fontWeight: 600, color: SAH_COLORS.cinzaT, textTransform: 'uppercase', letterSpacing: '.08em', mb: 2, mt: 3 }}>Localização</Typography>
-                <FormGrid cols={3}>
-                  <TextField label="UF"               value={form.uf}            slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="IBGE do Município" value={form.ibgeMunicipio} slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="Nome do Município" value={form.nomeMunicipio} slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="Região de Saúde"   value={form.regiaoSaude}   slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="IBGE Região"        value={form.ibgeRegiao}    slotProps={{ input: { readOnly: true } }} size="small" />
-                  <TextField label="Macrorregião"       value={form.macrorregiao}  slotProps={{ input: { readOnly: true } }} size="small" />
-                </FormGrid>
-              </Box>
-            </Section>
+              {/* ── Seção 1: Identificação ── */}
+              <div id="sec-1" style={sectionStyle}>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: V.verdeMed, display: "inline-block", flexShrink: 0 }} />
+                  Identificação do Processo
+                </div>
+                <div style={{ fontSize: 12, color: V.cinzaT, marginBottom: 22, paddingLeft: 18 }}>Dados de identificação e tramitação administrativa</div>
+                <div style={grid2}>
+                  <FieldAuto label="SAIPS (automático)" value="—" />
+                  <Field label="NUP" req hint="">
+                    <input className="inp-f" value={nup} onChange={(e) => setNup(e.target.value)} placeholder="00000.000000/0000-00" style={inp()} />
+                  </Field>
+                  <Field label="Situação" req>
+                    <select className="inp-f" value={situacao} onChange={(e) => setSituacao(e.target.value)} style={inp()}>
+                      {SITUACOES.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Tipo de Financiamento">
+                    <select className="inp-f" value={tipoFin} onChange={(e) => setTipoFin(e.target.value)} style={inp()}>
+                      {FINS.map((f) => <option key={f} value={f}>{f || "Selecione..."}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Técnico Responsável" req>
+                    <select className="inp-f" value={tecnico} onChange={(e) => setTecnico(e.target.value)} style={inp()}>
+                      {TECNICOS.map((t) => <option key={t}>{t}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Nº Portaria de Habilitação">
+                    <input className="inp-f" value={portaria} onChange={(e) => setPortaria(e.target.value)} placeholder="Ex: PORTARIA GM/MS Nº 3.282, DE 7 DE MARÇO DE 2024" style={inp()} />
+                  </Field>
+                </div>
 
-            {/* 2. Habilitação */}
-            <Section id="sec-habilitacao" title="Habilitação Solicitada" dot={SAH_COLORS.amarelo} desc="Selecione o(s) código(s). Múltiplas seleções são permitidas.">
-              <Typography sx={{ fontSize: 12, fontWeight: 600, mb: .5 }}>Código(s) <Box component="span" sx={{ color: SAH_COLORS.erro }}>*</Box></Typography>
-              <Typography sx={{ fontSize: 11, color: SAH_COLORS.cinzaT, mb: 1.75 }}>Clique no código — o nome aparece abaixo automaticamente.</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {fd?.info.tipoHabilitacao.map((h) => {
-                  const sel = form.habilitacoesSelecionadas.includes(h.codigo);
-                  return (
-                    <Chip key={h.codigo} label={h.codigo} onClick={() => toggleHab(h.codigo)} sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, border: `1.5px solid ${sel ? SAH_COLORS.verde : SAH_COLORS.cinzaB}`, bgcolor: sel ? SAH_COLORS.verde : SAH_COLORS.cinzaF, color: sel ? '#fff' : SAH_COLORS.texto, cursor: 'pointer', '&:hover': { bgcolor: sel ? SAH_COLORS.verdeMed : '#f0f7f3', borderColor: SAH_COLORS.verde } }} />
-                  );
-                })}
-              </Box>
-              {form.habilitacoesSelecionadas.length > 0 && (
-                <Box sx={{ bgcolor: SAH_COLORS.cinzaF, borderRadius: 1.5, p: 1.5, mb: 2.5 }}>
-                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: SAH_COLORS.cinzaT, textTransform: 'uppercase', letterSpacing: '.08em', mb: 1 }}>Selecionada(s)</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: .75 }}>
-                    {form.habilitacoesSelecionadas.map((c) => {
-                      const t = fd?.info.tipoHabilitacao.find((h) => h.codigo === c);
-                      return (
-                        <Box key={c} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: '8px 12px', bgcolor: SAH_COLORS.verdeBg, border: `1px solid ${SAH_COLORS.cinzaB}`, borderRadius: 1.5 }}>
-                          <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, color: SAH_COLORS.verde, minWidth: 40, fontSize: 12 }}>{c}</Typography>
-                          <Typography sx={{ fontSize: 12 }}>{t?.descricao}</Typography>
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                </Box>
-              )}
-              <TextField fullWidth label="Habilitação(ões) — texto consolidado" value={habConsolidado} slotProps={{ input: { readOnly: true } }} size="small" helperText="Preenchido automaticamente conforme código(s) selecionado(s)" />
-            </Section>
+                {/* Diligências */}
+                <div style={{ background: V.larBg, border: "1.5px solid #FFCC80", borderRadius: 10, padding: "16px 20px", marginTop: 18 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#7A3800", display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                    ⚠️ Diligência(s)
+                    <span style={{ fontSize: 10, fontWeight: 400, color: "#a0643a", marginLeft: 6 }}>Opcional — selecione uma ou mais</span>
+                  </label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {DILIGENCIAS.map((d) => (
+                      <div key={d} className="dil-chip-h" onClick={() => toggleDil(d)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${diligSel.includes(d) ? V.laranja : "#FFCC80"}`, fontSize: 11, fontWeight: diligSel.includes(d) ? 600 : 500, color: diligSel.includes(d) ? "#fff" : "#7A3800", cursor: "pointer", transition: "all .15s", background: diligSel.includes(d) ? V.laranja : "#fff", userSelect: "none" }}>
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+                  {diligSel.length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#7A3800", textTransform: "uppercase", letterSpacing: ".07em" }}>Diligências selecionadas</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+                        {diligSel.map((d) => (
+                          <div key={d} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 12px", background: "#fff", border: "1px solid #FFCC80", borderRadius: 8, fontSize: 12 }}>
+                            {d}
+                            <button onClick={() => toggleDil(d)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: V.cinzaT, padding: 0, lineHeight: 1 }}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-            {/* 3. Histórico */}
-            <Section id="sec-historico" title="Histórico de Habilitação" dot={SAH_COLORS.cinzaT} desc="Preencher somente se houver histórico anterior.">
-              <FormGrid>
-                <TextField label="Ano da Primeira Habilitação" type="number" size="small" placeholder="Ex: 1999" value={form.anoprimeiraHabilitacao} onChange={(e) => setForm((f) => ({ ...f, anoprimeiraHabilitacao: e.target.value }))} slotProps={{ htmlInput: { min: 1990, max: 2030 } }} />
-                <TextField label="Códigos 1ª Alteração"   size="small" placeholder="Ex: 17.01 e 17.04" value={form.codigos1aAlteracao}  onChange={(e) => setForm((f) => ({ ...f, codigos1aAlteracao: e.target.value }))} />
-                <TextField label="Ano da 1ª Alteração"    type="number" size="small" placeholder="Ex: 2007" value={form.ano1aAlteracao}   onChange={(e) => setForm((f) => ({ ...f, ano1aAlteracao: e.target.value }))} />
-                <TextField label="Códigos 2ª Alteração"   size="small" placeholder="Ex: 17.07 e 17.08" value={form.codigos2aAlteracao}  onChange={(e) => setForm((f) => ({ ...f, codigos2aAlteracao: e.target.value }))} />
-                <TextField label="Ano da 2ª Alteração"    type="number" size="small" placeholder="Ex: 2013" value={form.ano2aAlteracao}   onChange={(e) => setForm((f) => ({ ...f, ano2aAlteracao: e.target.value }))} />
-                <TextField label="Códigos 3ª Alteração"   size="small" placeholder="Ex: 17.07, 17.08 e 17.09" value={form.codigos3aAlteracao} onChange={(e) => setForm((f) => ({ ...f, codigos3aAlteracao: e.target.value }))} />
-              </FormGrid>
-            </Section>
+                {/* Datas */}
+                <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".1em", paddingBottom: 12, borderBottom: `1px solid ${V.cinzaB}`, marginBottom: 18, marginTop: 24 }}>
+                  Datas de tramitação
+                </div>
+                <div style={grid3}>
+                  <Field label="Início no SAIPS" req hint="Resposta única e fixa">
+                    <input className="inp-f" type="date" value={dtSaips} onChange={(e) => setDtSaips(e.target.value)} style={inp({ background: "#f8fdf9", color: V.cinzaT })} />
+                  </Field>
+                  <Field label="Entrada na DECAN" req hint="Resposta única e fixa">
+                    <input className="inp-f" type="date" value={dtDecan} onChange={(e) => setDtDecan(e.target.value)} style={inp({ background: "#f8fdf9", color: V.cinzaT })} />
+                  </Field>
+                  <Field label="Envio ao DRAC" hint="Preencher somente quando situação = Enviada ao DRAC">
+                    <input className="inp-f" type="date" value={dtDrac} onChange={(e) => setDtDrac(e.target.value)} style={inp()} />
+                  </Field>
+                </div>
+              </div>
 
-            {/* 4. Financeiro */}
-            <Section id="sec-financeiro" title="Dados Financeiros" dot={SAH_COLORS.azul}>
-              <FormGrid>
-                <TextField label="Previsão Financeira Mensal (R$)" size="small" placeholder="0,00" value={form.previsaoMensal} onChange={(e) => setForm((f) => ({ ...f, previsaoMensal: e.target.value }))} slotProps={{ input: { startAdornment: <InputAdornment position="start">R$</InputAdornment> } }} />
-                <TextField label="Previsão Financeira Anual (R$)" size="small" value={form.previsaoMensal ? `R$ ${(parseFloat(form.previsaoMensal.replace(/\./g, '').replace(',', '.')) * 12).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''} slotProps={{ input: { readOnly: true } }} helperText="Calculado automaticamente (mensal × 12)" />
-              </FormGrid>
-            </Section>
+              {/* ── Seção 2: Financeiro ── */}
+              <div id="sec-2" style={sectionStyle}>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: V.laranja, display: "inline-block" }} />
+                  Impacto Financeiro
+                </div>
+                <div style={{ fontSize: 12, color: V.cinzaT, marginBottom: 22, paddingLeft: 18 }}>Valores em R$ com até 2 casas decimais — campos obrigatórios</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, background: V.amarBg, borderRadius: 10, padding: 18, border: "1px solid #FFE082" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#7A5500" }}>Impacto Mensal <span style={{ color: V.erro }}>*</span></label>
+                    <input className="inp-f" value={mensal} onChange={(e) => setMensal(e.target.value)} placeholder="0,00"
+                      style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, fontWeight: 600, color: V.texto, background: "#fff", border: "1.5px solid #FFE082", borderRadius: 8, padding: "10px 14px", outline: "none", width: "100%" }} />
+                    <span style={{ fontSize: 11, color: "#7A5500" }}>R$ por mês</span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#7A5500" }}>Impacto Anual <span style={{ color: V.erro }}>*</span></label>
+                    <input readOnly value={anual || ""} placeholder="calculado"
+                      style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, fontWeight: 600, color: V.cinzaT, background: "#f8fdf9", border: "1.5px solid #FFE082", borderRadius: 8, padding: "10px 14px", width: "100%", cursor: "not-allowed" }} />
+                    <span style={{ fontSize: 11, color: "#7A5500" }}>Calculado (× 12)</span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#7A5500" }}>Parcela Única <span style={{ color: V.erro }}>*</span></label>
+                    <input className="inp-f" value={parcela} onChange={(e) => setParcela(e.target.value)} placeholder="0,00"
+                      style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, fontWeight: 600, color: V.texto, background: "#fff", border: "1.5px solid #FFE082", borderRadius: 8, padding: "10px 14px", outline: "none", width: "100%" }} />
+                    <span style={{ fontSize: 11, color: "#7A5500" }}>R$ pagamento único</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* 5. Técnico */}
-            <Section id="sec-tecnico" title="Responsável Técnico" dot={SAH_COLORS.roxo}>
-              <FormGrid>
-                <TextField label="Técnico Responsável *" select size="small" value={form.tecnicoId} onChange={(e) => setForm((f) => ({ ...f, tecnicoId: Number(e.target.value) }))}>
-                  <MenuItem value=""><em>Selecione…</em></MenuItem>
-                  {fd?.technicians.map((t) => <MenuItem key={t.id} value={t.id}>{t.fullName ?? `${t.name} ${t.surname}`}</MenuItem>)}
-                </TextField>
-                <DatePicker label="Data de Trabalho *" value={form.dataTrabalho} onChange={(d) => setForm((f) => ({ ...f, dataTrabalho: d }))} slotProps={{ textField: { size: 'small', helperText: 'Data em que a proposta foi recebida para análise' } }} />
-              </FormGrid>
-            </Section>
+              {/* ── Seção 3+4: CNES / Estabelecimento ── */}
+              <div id="sec-3" style={sectionStyle}>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#6A1B9A", display: "inline-block" }} />
+                  Estabelecimento e Localização
+                </div>
+                <div style={{ fontSize: 12, color: V.cinzaT, marginBottom: 22, paddingLeft: 18 }}>
+                  Digite o CNES para preencher automaticamente os dados do estabelecimento e localização via banco do CNES 🔗
+                </div>
 
-            {/* 6. Diligência */}
-            <Section id="sec-diligencia" title="Documentação / Diligência" dot={SAH_COLORS.laranja} desc="Marque os documentos já recebidos ou em análise.">
-              <FormGroup>
-                {fd?.info.diligencia.map((d) => (
-                  <FormControlLabel key={d.id} sx={{ mb: .5, alignItems: 'flex-start' }}
-                    control={<Checkbox size="small" checked={form.diligenciasSelecionadas.includes(d.id)} onChange={() => toggleDiligencia(d.id)} sx={{ color: SAH_COLORS.cinzaB, '&.Mui-checked': { color: SAH_COLORS.verde } }} />}
-                    label={<Typography sx={{ fontSize: 13 }}><Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 700, color: SAH_COLORS.cinzaT, mr: .75 }}>{String(d.id).padStart(2, '0')}.</Box>{d.title}</Typography>}
-                  />
+                {/* CNES input */}
+                <div style={{ background: V.cinzaF, border: `1.5px solid ${V.cinzaB}`, borderRadius: 10, padding: "18px 20px", marginBottom: 4 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: "0 0 180px" }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: V.texto }}>CNES <span style={{ color: V.erro }}>*</span></label>
+                      <div style={{ position: "relative" }}>
+                        <input className="inp-f" value={cnesVal} onChange={(e) => onCnesInput(e.target.value)}
+                          placeholder="0000000" maxLength={7}
+                          style={{ ...inp(), paddingRight: 38 }} />
+                        {cnesLoading && (
+                          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14 }}>⏳</span>
+                        )}
+                        {!cnesLoading && cnesData && (
+                          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: V.verdeCla }}>✓</span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: 11, color: V.cinzaT }}>7 dígitos — dados preenchidos automaticamente</span>
+                    </div>
+                    <div style={{ alignSelf: "center", fontSize: 12, color: V.cinzaT, paddingTop: 18 }}>
+                      {cnesLoading ? "Consultando..." : cnesData ? `✅ ${cnesData.nome}` : cnesVal.length > 0 && cnesVal.length < 7 ? "Digite 7 dígitos" : ""}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fields (desabilitados até ter CNES) */}
+                <div style={{ opacity: cnesData ? 1 : 0.4, pointerEvents: cnesData ? "auto" : "none", transition: "opacity .3s" }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".1em", paddingBottom: 12, borderBottom: `1px solid ${V.cinzaB}`, marginBottom: 18, marginTop: 20 }}>
+                    Dados do Estabelecimento
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
+                    <div style={{ gridColumn: "1/-1" }}><FieldAuto label="Nome do Estabelecimento" value={cnesData?.nome} /></div>
+                    <FieldAuto label="CNPJ" value={cnesData?.cnpj} />
+                    <FieldAuto label="Natureza Jurídica" value={cnesData?.natureza} />
+                    <FieldAuto label="Gestão" value={cnesData?.gestao} />
+                    <Field label="Nº Aceleradores / Cobaltos" hint="Único campo a preencher manualmente">
+                      <input className="inp-f" type="number" min="0" value={aceleradores} onChange={(e) => setAceleradores(e.target.value)} placeholder="Informar manualmente" style={inp()} />
+                    </Field>
+                  </div>
+
+                  <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".1em", paddingBottom: 12, borderBottom: `1px solid ${V.cinzaB}`, marginBottom: 18, marginTop: 8 }}>
+                    Localização
+                  </div>
+                  <div id="sec-4" style={grid3}>
+                    <FieldAuto label="UF" value={cnesData?.uf} />
+                    <FieldAuto label="IBGE do Município" value={cnesData?.ibge_mun} />
+                    <FieldAuto label="Nome do Município" value={cnesData?.municipio} />
+                    <FieldAuto label="Região de Saúde" value={cnesData?.regiao} />
+                    <FieldAuto label="IBGE Região de Saúde" value={cnesData?.ibge_reg} />
+                    <FieldAuto label="Macrorregião de Saúde" value={cnesData?.macro} />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Seção 5: Habilitação ── */}
+              <div id="sec-5" style={sectionStyle}>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: V.amarelo, display: "inline-block" }} />
+                  Habilitação Solicitada
+                </div>
+                <div style={{ fontSize: 12, color: V.cinzaT, marginBottom: 22, paddingLeft: 18 }}>Selecione o(s) código(s). Múltiplas seleções permitidas.</div>
+
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                  Código(s) de habilitação <span style={{ color: V.erro }}>*</span>
+                </div>
+                <div style={{ fontSize: 11, color: V.cinzaT, marginBottom: 14 }}>
+                  Clique no código — o nome da habilitação aparece abaixo automaticamente
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                  {HAB_CHIPS.map((h) => (
+                    <div key={h.cod} className="hab-chip-h" onClick={() => toggleHab(h.cod)}
+                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${habSel.includes(h.cod) ? V.verdeMed : V.cinzaB}`, fontSize: 12, fontWeight: habSel.includes(h.cod) ? 600 : 500, color: habSel.includes(h.cod) ? V.verde : V.cinzaT, cursor: "pointer", transition: "all .15s", background: habSel.includes(h.cod) ? V.verdeBg : V.cinzaF, userSelect: "none" }}>
+                      {h.cod}
+                    </div>
+                  ))}
+                </div>
+
+                {habSel.length > 0 && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 8 }}>Habilitação(ões) selecionada(s)</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {habSel.map((cod) => {
+                        const h = HAB_CHIPS.find((x) => x.cod === cod)!;
+                        return (
+                          <div key={cod} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: V.verdeBg, borderRadius: 8, border: `1px solid ${V.cinzaB}` }}>
+                            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 700, color: V.verde, background: "#fff", padding: "2px 8px", borderRadius: 4, border: `1px solid ${V.cinzaB}` }}>{cod}</span>
+                            <span style={{ fontSize: 13 }}>{h.nome}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr", gap: 18 }}>
+                  <Field label="Habilitação(ões) — texto consolidado" hint="Preenchido automaticamente conforme código(s) selecionado(s)">
+                    <input readOnly value={habNomes} placeholder="Selecione um ou mais códigos acima" style={{ ...inp(), background: "#f8fdf9", color: V.cinzaT, cursor: "not-allowed" }} />
+                  </Field>
+                </div>
+              </div>
+
+              {/* ── Seção 6: Histórico ── */}
+              <div id="sec-6" style={sectionStyle}>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: V.cinzaT, display: "inline-block" }} />
+                  Histórico de Habilitação
+                </div>
+                <div style={{ fontSize: 12, color: V.cinzaT, marginBottom: 22, paddingLeft: 18 }}>Preencher somente se houver histórico anterior</div>
+
+                {/* Primeira habilitação */}
+                <div style={{ background: V.cinzaF, border: `1.5px solid ${V.cinzaB}`, borderRadius: 10, padding: "16px 18px", marginBottom: 12, position: "relative" }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 12 }}>Primeira Habilitação</div>
+                  <div style={grid2}>
+                    <Field label="Ano da Primeira Habilitação">
+                      <input className="inp-f" type="number" value={histAno} onChange={(e) => setHistAno(e.target.value)} placeholder="Ex: 1999" min="1990" max="2025" style={inp()} />
+                    </Field>
+                    <Field label="Código(s) de Habilitação">
+                      <input className="inp-f" value={histCod} onChange={(e) => setHistCod(e.target.value)} placeholder="Ex: 17.01 e 17.04" style={inp()} />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* Alterações */}
+                {alteracoes.map((alt, i) => (
+                  <div key={i} style={{ background: V.cinzaF, border: `1.5px solid ${V.cinzaB}`, borderRadius: 10, padding: "16px 18px", marginBottom: 12, position: "relative" }}>
+                    <button onClick={() => setAlteracoes((p) => p.filter((_, j) => j !== i))}
+                      style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", cursor: "pointer", fontSize: 14, color: V.cinzaT }}>✕</button>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 12 }}>Alteração {i + 1}</div>
+                    <div style={grid2}>
+                      <Field label="Ano">
+                        <input className="inp-f" type="number" value={alt.ano} onChange={(e) => setAlteracoes((p) => p.map((a, j) => j === i ? { ...a, ano: e.target.value } : a))} placeholder="Ex: 2010" style={inp()} />
+                      </Field>
+                      <Field label="Código(s)">
+                        <input className="inp-f" value={alt.cod} onChange={(e) => setAlteracoes((p) => p.map((a, j) => j === i ? { ...a, cod: e.target.value } : a))} placeholder="Ex: 17.06" style={inp()} />
+                      </Field>
+                    </div>
+                  </div>
                 ))}
-              </FormGroup>
-              <Divider sx={{ my: 2.5 }} />
-              <TextField fullWidth multiline rows={3} label="Observações" size="small" placeholder="Descreva pendências, observações ou histórico relevante…" value={form.observacoes} onChange={(e) => setForm((f) => ({ ...f, observacoes: e.target.value }))} />
-            </Section>
 
-            {/* Action bar */}
-            <Box sx={{ position: 'sticky', bottom: 0, bgcolor: '#fff', borderTop: `1px solid ${SAH_COLORS.cinzaB}`, px: 0, py: 2, mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => router.push('/propostas')} sx={{ borderColor: SAH_COLORS.cinzaB, color: SAH_COLORS.cinzaT }}>
+                <button className="btn-add-hist-h" onClick={() => setAlteracoes((p) => [...p, { ano: "", cod: "" }])}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: V.verdeBg, color: V.verde, fontFamily: "'Sora',sans-serif", fontSize: 12, fontWeight: 600, border: `1.5px dashed ${V.verdeCla}`, borderRadius: 8, cursor: "pointer", transition: "all .2s", marginTop: 8 }}>
+                  ＋ Adicionar alteração no histórico
+                </button>
+              </div>
+
+            {/* Footer bar */}
+            <div style={{ background: "#fff", borderTop: `1px solid ${V.cinzaB}`, padding: "16px 36px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+              <button className="btn-outline-h" onClick={() => router.push("/propostas")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "transparent", color: V.cinzaT, fontFamily: "'Sora',sans-serif", fontSize: 13, fontWeight: 600, border: `1.5px solid ${V.cinzaB}`, borderRadius: 8, cursor: "pointer", transition: "all .2s" }}>
                 ← Cancelar
-              </Button>
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <Button variant="outlined" startIcon={<SaveOutlinedIcon />} sx={{ borderColor: SAH_COLORS.cinzaB, color: SAH_COLORS.cinzaT }}>
-                  Salvar rascunho
-                </Button>
-                <Button variant="contained" endIcon={<SendOutlinedIcon />} onClick={handleSubmit}>
-                  Enviar proposta
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+              </button>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button className="btn-outline-h" onClick={salvarRascunho} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "transparent", color: V.cinzaT, fontFamily: "'Sora',sans-serif", fontSize: 13, fontWeight: 600, border: `1.5px solid ${V.cinzaB}`, borderRadius: 8, cursor: "pointer", transition: "all .2s" }}>
+                  💾 Salvar rascunho
+                </button>
+                <button className="btn-primary-h" onClick={submitForm}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", background: V.verde, color: "#fff", fontFamily: "'Sora',sans-serif", fontSize: 13, fontWeight: 600, border: "none", borderRadius: 8, cursor: "pointer", transition: "all .2s" }}>
+                  Enviar proposta →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <Snackbar open={toast} autoHideDuration={3000} onClose={() => setToast(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-          <Alert severity="success" sx={{ fontWeight: 600 }}>Proposta enviada com sucesso!</Alert>
-        </Snackbar>
-      </Box>
-    </LocalizationProvider>
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9999, background: V.verde, color: "#fff", padding: "14px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,.2)", display: "flex", alignItems: "center", gap: 10 }}>
+          {toastMsg}
+        </div>
+      )}
+    </>
   );
 }

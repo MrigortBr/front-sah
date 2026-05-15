@@ -1,135 +1,266 @@
-'use client';
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { SAH_COLORS } from '@/theme/theme';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Alert from '@mui/material/Alert';
-import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+"use client";
+
+import React, { CSSProperties, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { PerfilUsuario } from "@/types";
+import Link from "next/link";
+
+const V = {
+  verde: "#1B5E3B",
+  verdeMed: "#2E7D52",
+  verdeCla: "#3DA06A",
+  verdeBg: "#EAF4EF",
+  amarelo: "#FFCD00",
+  cinzaF: "#F4F6F4",
+  cinzaB: "#E4EBE6",
+  cinzaT: "#6B7B6E",
+  texto: "#1A2E20",
+  erro: "#C0392B",
+};
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [perfil,     setPerfil]     = useState<'tecnico' | 'consulta'>('tecnico');
-  const [email,      setEmail]      = useState('');
-  const [senha,      setSenha]      = useState('');
-  const [showSenha,  setShowSenha]  = useState(false);
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [senhaError, setSenhaError] = useState('');
+  const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
+  const [perfil, setPerfil] = useState<"tecnico" | "consulta">("tecnico");
+  const [loginVal, setLoginVal] = useState("");
+  const [senha, setSenha] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errLogin, setErrLogin] = useState(false);
+  const [errSenha, setErrSenha] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEmailError(''); setSenhaError(''); setError('');
+    setErrLogin(false); setErrSenha(false);
     let ok = true;
-    if (!email.trim()) { setEmailError('Informe seu e-mail institucional.'); ok = false; }
-    if (!senha.trim()) { setSenhaError('Informe sua senha.');                ok = false; }
+    if (!loginVal.trim()) { setErrLogin(true); ok = false; }
+    if (!senha.trim()) { setErrSenha(true); ok = false; }
     if (!ok) return;
     setLoading(true);
     try {
-      await login({ email, password: senha });
+      await login(loginVal, senha, perfil as PerfilUsuario);
+      router.push("/propostas");
     } catch {
-      setError('Credenciais inválidas. Verifique e tente novamente.');
+      setErrLogin(true);
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const inputStyle = (err: boolean): CSSProperties => ({
+    width: "100%", padding: "12px 14px 12px 42px",
+    fontFamily: "'Sora', sans-serif", fontSize: 14, color: V.texto,
+    background: err ? "#fff8f8" : V.cinzaF,
+    border: `1.5px solid ${err ? V.erro : V.cinzaB}`,
+    borderRadius: 10, outline: "none",
+    transition: "border-color .2s, background .2s, box-shadow .2s",
+    boxSizing: "border-box",
+  });
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 460px' } }}>
-      {/* ── Left panel ─────────────────────── */}
-      <Box sx={{ position: 'relative', background: SAH_COLORS.verde, display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', p: '48px 56px', overflow: 'hidden' }}>
-        <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.12) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-        <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 80% 60% at 10% 110%, rgba(255,205,0,.15) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 90% -10%, rgba(61,160,106,.25) 0%, transparent 55%)' }} />
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 7 }}>
-            <Box sx={{ width: 44, height: 44, bgcolor: SAH_COLORS.amarelo, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 20, color: SAH_COLORS.verde, fontFamily: 'monospace' }}>MS</Box>
-            <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.9)', lineHeight: 1.3 }}>Ministério da Saúde</Typography>
-              <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,.55)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Departamento de Atenção Especializada</Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,205,0,.18)', border: '1px solid rgba(255,205,0,.35)', color: SAH_COLORS.amarelo, fontSize: 10, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', px: 1.5, py: 0.625, borderRadius: 20, mb: 3 }}>
-            <Box component="span" sx={{ width: 6, height: 6, bgcolor: SAH_COLORS.amarelo, borderRadius: '50%', animation: 'pulse 2s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1, transform: 'scale(1)' }, '50%': { opacity: .5, transform: 'scale(.8)' } } }} />
-            Sistema em operação
-          </Box>
-          <Typography variant="h2" sx={{ color: '#fff', fontSize: 'clamp(28px,3vw,42px)', mb: 2 }}>
-            SAH<br /><Box component="span" sx={{ color: SAH_COLORS.amarelo }}>Oncologia</Box>
-          </Typography>
-          <Typography sx={{ fontSize: 14, color: 'rgba(255,255,255,.6)', lineHeight: 1.75, maxWidth: 380, fontWeight: 300 }}>
-            Sistema de Acompanhamento de Habilitações — gestão e monitoramento das habilitações oncológicas e novos serviços no SUS.
-          </Typography>
-        </Box>
-        <Box sx={{ position: 'relative', zIndex: 1, pt: 5, borderTop: '1px solid rgba(255,255,255,.1)', display: 'flex', gap: 5 }}>
-          {[{ num: '300+', label: 'Estabelecimentos' }, { num: '27', label: 'Unidades da Federação' }, { num: '43', label: 'Campos monitorados' }].map((s) => (
-            <Box key={s.label}>
-              <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#fff', fontFamily: 'monospace', lineHeight: 1, mb: .5 }}>{s.num}</Typography>
-              <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,.45)', textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 500 }}>{s.label}</Typography>
-            </Box>
-          ))}
-        </Box>
-      </Box>
+    <>
 
-      {/* ── Right panel ────────────────────── */}
-      <Paper elevation={0} square sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: '40px 32px', md: '56px 52px' }, position: 'relative', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: `linear-gradient(180deg, ${SAH_COLORS.amarelo}, ${SAH_COLORS.verdeCla})` } }}>
-        <Typography sx={{ fontSize: 11, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: SAH_COLORS.verdeMed, mb: 1 }}>Acesso restrito</Typography>
-        <Typography variant="h4" sx={{ mb: .75 }}>Entrar no sistema</Typography>
-        <Typography sx={{ fontSize: 13, color: SAH_COLORS.cinzaT, mb: 4, lineHeight: 1.6 }}>Use seu login institucional para acessar o SAH.</Typography>
+      <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 460px" }}>
 
-        <Typography sx={{ fontSize: 12, fontWeight: 600, mb: 1.25 }}>Perfil de acesso <Box component="span" sx={{ color: SAH_COLORS.erro }}>*</Box></Typography>
-        <ToggleButtonGroup exclusive value={perfil} onChange={(_, v) => { if (v) setPerfil(v); }} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25, mb: 3.5 }}>
-          {[{ value: 'tecnico', Icon: ScienceOutlinedIcon, label: 'Técnico', desc: 'DECAN / MS' }, { value: 'consulta', Icon: MenuBookOutlinedIcon, label: 'Consulta', desc: 'Somente leitura' }].map(({ value, Icon, label, desc }) => (
-            <ToggleButton key={value} value={value} sx={{ borderRadius: '10px !important', border: `1.5px solid ${SAH_COLORS.cinzaB} !important`, bgcolor: SAH_COLORS.cinzaF, p: 2, textAlign: 'left', justifyContent: 'flex-start', gap: 1.5, '&.Mui-selected': { bgcolor: '#EAF4EF', border: `1.5px solid ${SAH_COLORS.verdeMed} !important`, boxShadow: '0 0 0 3px rgba(46,125,82,.1)' } }}>
-              <Box sx={{ width: 38, height: 38, borderRadius: 2, bgcolor: perfil === value ? SAH_COLORS.verdeMed : SAH_COLORS.verde, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
-                <Icon fontSize="small" />
-              </Box>
-              <Box>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, color: SAH_COLORS.texto }}>{label}</Typography>
-                <Typography sx={{ fontSize: 11, color: SAH_COLORS.cinzaT }}>{desc}</Typography>
-              </Box>
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+        {/* ── Painel esquerdo ── */}
+        <div style={{
+          position: "relative", background: V.verde,
+          display: "flex", flexDirection: "column", justifyContent: "space-between",
+          padding: "48px 56px", overflow: "hidden",
+        }}>
+          <div style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            background: `radial-gradient(ellipse 80% 60% at 10% 110%,rgba(255,205,0,.15) 0%,transparent 60%),
+                         radial-gradient(ellipse 60% 80% at 90% -10%,rgba(61,160,106,.25) 0%,transparent 55%)` }} />
+          <div style={{
+            position: "absolute", bottom: -120, right: -120, width: 420, height: 420,
+            border: "60px solid rgba(255,255,255,.04)", borderRadius: "50%", pointerEvents: "none"
+          }} />
+          <div style={{
+            position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px)",
+            backgroundSize: "28px 28px", pointerEvents: "none"
+          }} />
 
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          {error && <Alert severity="error" sx={{ mb: 2, fontSize: 13 }}>{error}</Alert>}
-          <TextField fullWidth label="E-mail" type="email" placeholder="usuario@saude.gov.br" value={email} onChange={(e) => setEmail(e.target.value)} error={!!emailError} helperText={emailError} sx={{ mb: 2.5 }}
-            slotProps={{ input: { startAdornment: <InputAdornment position="start"><PersonOutlineIcon sx={{ color: SAH_COLORS.cinzaT, fontSize: 18 }} /></InputAdornment> } }}
-          />
-          <TextField fullWidth label="Senha" type={showSenha ? 'text' : 'password'} placeholder="••••••••" value={senha} onChange={(e) => setSenha(e.target.value)} error={!!senhaError} helperText={senhaError} sx={{ mb: 0.5 }}
-            slotProps={{ input: { startAdornment: <InputAdornment position="start"><LockOutlinedIcon sx={{ color: SAH_COLORS.cinzaT, fontSize: 18 }} /></InputAdornment>, endAdornment: <InputAdornment position="end"><IconButton size="small" onClick={() => setShowSenha((v) => !v)} edge="end">{showSenha ? <VisibilityOffOutlinedIcon fontSize="small" /> : <VisibilityOutlinedIcon fontSize="small" />}</IconButton></InputAdornment> } }}
-          />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-            <Typography component="a" href="#" sx={{ fontSize: 12, color: SAH_COLORS.verdeMed, fontWeight: 500, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Esqueceu a senha?</Typography>
-          </Box>
-          <Button type="submit" variant="contained" fullWidth disabled={loading} endIcon={loading ? <CircularProgress size={16} color="inherit" /> : <ArrowForwardIcon />} sx={{ py: 1.75, fontSize: 14 }}>
-            {loading ? 'Entrando…' : 'Entrar no sistema'}
-          </Button>
-        </Box>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 56 }}>
+              <div style={{
+                width: 44, height: 44, background: V.amarelo, borderRadius: 8,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 20, fontWeight: 700, color: V.verde, fontFamily: "'IBM Plex Mono',monospace"
+              }}>MS</div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,.9)" }}>Ministério da Saúde</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,.65)", letterSpacing: ".08em", textTransform: "uppercase" }}>
+                  Departamento de Atenção Especializada
+                </div>
+              </div>
+            </div>
 
-        <Box sx={{ mt: 3.5, pt: 2.25, borderTop: `1px solid ${SAH_COLORS.cinzaB}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: 10, color: '#b0bdb4', fontFamily: 'monospace' }}>SAH v2.0 · 2025</Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            {['Suporte', 'Manual', 'Privacidade'].map((l) => (
-              <Typography key={l} component="a" href="#" sx={{ fontSize: 11, color: SAH_COLORS.cinzaT, textDecoration: 'none', '&:hover': { color: SAH_COLORS.verde } }}>{l}</Typography>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "rgba(255,205,0,.18)", border: "1px solid rgba(255,205,0,.35)",
+              color: V.amarelo, fontSize: 10, fontWeight: 600,
+              letterSpacing: ".12em", textTransform: "uppercase",
+              padding: "5px 12px", borderRadius: 20, marginBottom: 24,
+            }}>
+              <span style={{
+                width: 6, height: 6, background: V.amarelo, borderRadius: "50%",
+                display: "inline-block", animation: "pulse 2s ease-in-out infinite"
+              }} />
+              Sistema em operação
+            </div>
+
+            <h1 style={{
+              fontSize: "clamp(28px,3vw,42px)", fontWeight: 700, color: "#fff",
+              lineHeight: 1.15, letterSpacing: "-.02em", marginBottom: 16
+            }}>
+              SAH<br /><em style={{ fontStyle: "normal", color: V.amarelo }}>Oncologia</em>
+            </h1>
+
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,.6)", lineHeight: 1.75, maxWidth: 380, fontWeight: 300 }}>
+              Sistema de Acompanhamento de Habilitações — gestão e monitoramento das habilitações oncológicas e novos serviços no SUS.
+            </p>
+          </div>
+
+          <div style={{
+            position: "relative", zIndex: 1, display: "flex", gap: 40,
+            paddingTop: 40, borderTop: "1px solid rgba(255,255,255,.1)"
+          }}>
+            {[["300", "+", "Estabelecimentos"], ["27", "", "Unidades da Federação"], ["43", "", "Campos monitorados"]].map(([n, s, l]) => (
+              <div key={l}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "#fff", fontFamily: "'IBM Plex Mono',monospace", lineHeight: 1, marginBottom: 4 }}>
+                  {n}<span style={{ color: V.amarelo }}>{s}</span>
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", textTransform: "uppercase", letterSpacing: ".08em", fontWeight: 500 }}>{l}</div>
+              </div>
             ))}
-          </Box>
-        </Box>
-      </Paper>
-    </Box>
+          </div>
+        </div>
+
+        {/* ── Painel direito ── */}
+        <div style={{
+          background: "#fff", display: "flex", flexDirection: "column",
+          justifyContent: "center", padding: "56px 52px", position: "relative"
+        }}>
+          <div style={{
+            position: "absolute", top: 0, left: 0, width: 4, height: "100%",
+            background: "linear-gradient(180deg,#FFCD00,#3DA06A)"
+          }} />
+
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: V.verdeMed, marginBottom: 10 }}>
+            Acesso restrito
+          </p>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: V.texto, letterSpacing: "-.02em", marginBottom: 6, lineHeight: 1.2 }}>
+            Entrar no sistema
+          </h2>
+          <p style={{ fontSize: 13, color: V.cinzaT, marginBottom: 32, lineHeight: 1.6 }}>
+            Use seu login institucional para acessar o SAH.
+          </p>
+
+          <form onSubmit={handleSubmit} noValidate>
+            {/* Perfil */}
+            <p style={{ fontSize: 12, fontWeight: 600, color: V.texto, marginBottom: 10 }}>
+              Perfil de acesso <span style={{ color: V.erro }}>*</span>
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 28 }}>
+              {[
+                { value: "tecnico", icon: "🔬", name: "Técnico", desc: "DECAN / MS" },
+                { value: "consulta", icon: "📋", name: "Consulta", desc: "Somente leitura" },
+              ].map((p) => (
+                <label key={p.value} style={{ cursor: "pointer" }}>
+                  <input type="radio" name="perfil" value={p.value}
+                    checked={perfil === p.value}
+                    onChange={() => setPerfil(p.value as "tecnico" | "consulta")}
+                    style={{ position: "absolute", opacity: 0, width: 0, height: 0 }} />
+                  <div className="profile-card" style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: 16,
+                    border: `1.5px solid ${perfil === p.value ? V.verdeMed : V.cinzaB}`,
+                    borderRadius: 10, background: perfil === p.value ? "#eaf4ef" : V.cinzaF,
+                    boxShadow: perfil === p.value ? "0 0 0 3px rgba(46,125,82,.1)" : "none",
+                    transition: "all .2s",
+                  }}>
+                    <div style={{
+                      width: 38, height: 38, borderRadius: 8,
+                      background: perfil === p.value ? V.verdeMed : V.verde,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 18, flexShrink: 0
+                    }}>{p.icon}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: V.texto }}>{p.name}</div>
+                      <div style={{ fontSize: 11, color: V.cinzaT }}>{p.desc}</div>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {/* Login */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: V.texto, marginBottom: 7 }}>
+                Login <span style={{ color: V.erro }}>*</span>
+              </label>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: V.cinzaT, fontSize: 15, pointerEvents: "none" }}>👤</span>
+                <input className="inp-focus" type="text" value={loginVal}
+                  onChange={(e) => setLoginVal(e.target.value)}
+                  placeholder="usuario.nome" autoComplete="username"
+                  style={inputStyle(errLogin)} />
+              </div>
+              {errLogin && <div style={{ fontSize: 11, color: V.erro, marginTop: 5 }}>Informe seu login institucional.</div>}
+            </div>
+
+            {/* Senha */}
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: V.texto, marginBottom: 7 }}>
+                Senha <span style={{ color: V.erro }}>*</span>
+              </label>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: V.cinzaT, fontSize: 15, pointerEvents: "none" }}>🔒</span>
+                <input className="inp-focus" type={showPass ? "text" : "password"} value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  placeholder="••••••••" autoComplete="current-password"
+                  style={{ ...inputStyle(errSenha), paddingRight: 40 }} />
+                <button type="button" onClick={() => setShowPass(!showPass)}
+                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: V.cinzaT, fontSize: 15, display: "flex" }}>
+                  {showPass ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+                <Link href="/senha" className="link-forgot" style={{ fontSize: 12, color: V.verdeMed, textDecoration: "none", fontWeight: 500 }}>
+                  Esqueceu a senha?
+                </Link>
+              </div>
+              {errSenha && <div style={{ fontSize: 11, color: V.erro, marginTop: 5 }}>Informe sua senha.</div>}
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-login"
+              style={{
+                width: "100%", padding: 14, background: V.verde, color: "#fff",
+                fontFamily: "'Sora',sans-serif", fontSize: 14, fontWeight: 600,
+                border: "none", borderRadius: 10, cursor: loading ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                marginTop: 8, transition: "all .2s", opacity: loading ? .75 : 1,
+                position: "relative", overflow: "hidden",
+              }}>
+              {loading
+                ? <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,.3)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "spin .7s linear infinite" }} />
+                : <><span>Entrar no sistema</span><span style={{ fontSize: 16, transition: "transform .2s" }}>→</span></>
+              }
+            </button>
+          </form>
+
+          <div style={{ marginTop: 28, paddingTop: 18, borderTop: `1px solid ${V.cinzaB}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 10, color: "#b0bdb4", fontFamily: "'IBM Plex Mono',monospace" }}>SAH v1.0 · 2025</span>
+            <div style={{ display: "flex", gap: 16 }}>
+              {["Suporte", "Manual", "Privacidade"].map((l) => (
+                <a key={l} href="#" style={{ fontSize: 11, color: V.cinzaT, textDecoration: "none" }}>{l}</a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

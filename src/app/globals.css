@@ -1,0 +1,43 @@
+html, body { margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Inputs */
+.inp-f:focus {
+  border-color: #2E7D52 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(46,125,82,.1) !important;
+}
+
+/* Botões hover */
+.btn-primary-h:hover:not(:disabled) {
+  background: #2E7D52 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(27,94,59,.25) !important;
+}
+.btn-logout-h:hover { background: rgba(255,255,255,.18) !important; color: #fff !important; }
+.btn-outline-h:hover { border-color: #6B7B6E !important; color: #1A2E20 !important; }
+.btn-edit:hover { background: #1565C0 !important; color: #fff !important; }
+.btn-sm-h:hover { border-color: #2E7D52 !important; color: #1B5E3B !important; background: #EAF4EF !important; }
+.btn-add-hist-h:hover { border-color: #2E7D52 !important; }
+.btn-copiar-h:hover { background: #1B5E3B !important; color: #fff !important; }
+
+/* Tabela */
+.prop-tr:hover td { background: #fafcfa !important; }
+.sidebar-item-h:hover { background: #F4F6F4 !important; color: #1A2E20 !important; }
+
+/* Chips */
+.dil-chip-h:hover { border-color: #E65100 !important; background: #FFF3E0 !important; }
+.hab-chip-h:hover { border-color: #3DA06A !important; color: #1B5E3B !important; background: #EAF4EF !important; }
+.nota-item-h:hover { border-color: #3DA06A !important; background: #EAF4EF !important; }
+.step-item-h:hover { background: #F4F6F4 !important; }
+.prop-tab-h:hover { color: #1A2E20 !important; }
+.back-h:hover { color: #1B5E3B !important; }
+.inp-focus:focus { border-color: #2E7D52 !important; background: #fff !important; }
+.profile-card:hover { border-color: #3DA06A !important; background: #f0f7f3 !important; }
+.link-forgot:hover { text-decoration: underline; }
+.link-h:hover { text-decoration: underline; }
+
+/* Animações */
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }

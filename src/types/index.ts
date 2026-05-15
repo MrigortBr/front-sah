@@ -1,138 +1,178 @@
-// ── API response wrapper ─────────────────────────────────────
-export interface ApiResponse<T> {
-  message: string;
-  description: string;
-  data: T;
-}
+// ─── Habilitação ──────────────────────────────────────────────────────────────
 
-// ── Form list data (GET /form/list) ──────────────────────────
 export interface TipoHabilitacao {
   codigo: string;
   descricao: string;
   categoria: string;
 }
 
+// ─── Diligência ───────────────────────────────────────────────────────────────
+
 export interface Diligencia {
   id: number;
   title: string;
 }
 
-export interface Technician {
+// ─── Técnico ──────────────────────────────────────────────────────────────────
+
+export interface Tecnico {
   id: number;
   name: string;
   surname: string;
-  /** computed full name */
-  fullName?: string;
 }
+
+// ─── CNES ─────────────────────────────────────────────────────────────────────
 
 export interface CnesEstabelecimento {
   cnes: string;
   nomeEstabelecimento: string;
+  cnpj?: string;
+  naturezaJuridica?: string;
+  gestao?: string;
+  uf?: string;
+  ibgeMunicipio?: string;
+  nomeMunicipio?: string;
+  regiaoSaude?: string;
+  ibgeRegiao?: string;
+  macrorregiao?: string;
+  numAceleradores?: number;
 }
 
-export interface FormListInfo {
+// ─── Situação (estático conforme decisão) ─────────────────────────────────────
+
+export type SituacaoProposta =
+  | "Enviada ao MS"
+  | "Em análise"
+  | "Em diligência"
+  | "Rejeitada"
+  | "Rejeitada por não atendimento à diligência"
+  | "Aprovada"
+  | "Portaria Publicada"
+  | "Enviada ao DRAC"
+  | "Proposta excluída"
+  | "Proposta concluída";
+
+export const SITUACOES: SituacaoProposta[] = [
+  "Enviada ao MS",
+  "Em análise",
+  "Em diligência",
+  "Rejeitada",
+  "Rejeitada por não atendimento à diligência",
+  "Aprovada",
+  "Portaria Publicada",
+  "Enviada ao DRAC",
+  "Proposta excluída",
+  "Proposta concluída",
+];
+
+export type TipoFinanciamento = "CHARR" | "MAC" | "FAEC" | "MAC e FAEC" | "Não há ônus para o MS";
+
+export const TIPOS_FINANCIAMENTO: TipoFinanciamento[] = [
+  "CHARR",
+  "MAC",
+  "FAEC",
+  "MAC e FAEC",
+  "Não há ônus para o MS",
+];
+
+// ─── Proposta ─────────────────────────────────────────────────────────────────
+
+export interface HistoricoHabilitacao {
+  ano?: number;
+  codigos?: string;
+}
+
+export interface Proposta {
+  id?: number;
+  // Etapa 1 — Identificação
+  saips?: string;
+  nup: string;
+  situacao: SituacaoProposta;
+  tipoFinanciamento?: TipoFinanciamento;
+  tecnicoId: number;
+  numPortaria?: string;
+  diligencias: number[];
+  dataInicioSaips?: string;
+  dataEntradaDecan?: string;
+  dataEnvioDrac?: string;
+  dataTrabalho?: string;
+  // Etapa 2 — Financeiro
+  impactoMensal?: number;
+  impactoAnual?: number;
+  parcelaUnica?: number;
+  // Etapa 3+4 — Estabelecimento e Localização
+  cnes: string;
+  nomeEstabelecimento?: string;
+  cnpj?: string;
+  naturezaJuridica?: string;
+  gestao?: string;
+  numAceleradores?: number;
+  uf?: string;
+  ibgeMunicipio?: string;
+  nomeMunicipio?: string;
+  regiaoSaude?: string;
+  ibgeRegiao?: string;
+  macrorregiao?: string;
+  // Etapa 5 — Habilitação
+  codigosHabilitacao: string[];
+  // Etapa 6 — Histórico
+  historicoFirstYear?: number;
+  historicoFirstCodigos?: string;
+  historicoAlteracoes?: HistoricoHabilitacao[];
+}
+
+// ─── Info da API ──────────────────────────────────────────────────────────────
+
+export interface InfoResponse {
   tipoHabilitacao: TipoHabilitacao[];
   diligencia: Diligencia[];
 }
 
-export interface FormListData {
-  info: FormListInfo;
-  technicians: Technician[];
-  cnes: CnesEstabelecimento[];
+export interface ApiResponse<T> {
+  message: string;
+  description: string;
+  data: T;
 }
 
-// ── Situação (static) ─────────────────────────────────────────
-export type SituacaoId =
-  | 'todas'
-  | 'em_analise'
-  | 'no_drac'
-  | 'em_diligencia'
-  | 'aprovada'
-  | 'portaria_publicada';
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export interface Situacao {
-  id: SituacaoId;
-  label: string;
-  icon: string;
-  color: 'default' | 'warning' | 'info' | 'error' | 'success' | 'secondary';
-  count?: number;
-}
+export type PerfilUsuario = "tecnico" | "gestor";
 
-// ── Proposta ──────────────────────────────────────────────────
-export interface Proposta {
+export interface Usuario {
   id: number;
+  nome: string;
+  sobrenome: string;
+  perfil: PerfilUsuario;
+  setor: string;
+}
+
+// ─── Habilitação Ativa ────────────────────────────────────────────────────────
+
+export interface HabilitacaoAtiva {
   cnes: string;
-  nomeEstabelecimento: string;
+  nome: string;
   uf: string;
   municipio: string;
   habilitacao: string;
-  situacao: SituacaoId;
-  tecnico: string;
-  dataEntrada: string;
-  dataTrabalho?: string;
-}
-
-// ── CNES lookup (mock) ────────────────────────────────────────
-export interface CnesData {
-  nome: string;
-  cnpj: string;
-  natureza: string;
+  codigoHab: string;
   gestao: string;
-  uf: string;
-  ibge_mun: string;
-  municipio: string;
-  regiao: string;
-  ibge_reg: string;
-  macro: string;
+  aceleradores: number;
+  desde: number;
 }
 
-// ── Cadastro form ─────────────────────────────────────────────
-export interface CadastroFormValues {
-  cnes: string;
-  nomeEstabelecimento: string;
-  cnpj: string;
-  naturezaJuridica: string;
-  gestao: string;
-  uf: string;
-  ibgeMunicipio: string;
-  nomeMunicipio: string;
-  regiaoSaude: string;
-  ibgeRegiao: string;
-  macrorregiao: string;
-  aceleradores: number | '';
-  habilitacoesSelecionadas: string[];
-  anoprimeiraHabilitacao: string;
-  codigos1aAlteracao: string;
-  ano1aAlteracao: string;
-  codigos2aAlteracao: string;
-  ano2aAlteracao: string;
-  codigos3aAlteracao: string;
-  tecnicoId: number | '';
-  dataTrabalho: Date | null;
-  previsaoMensal: string;
-  diligenciasSelecionadas: number[];
-  observacoes: string;
+// ─── Step do Cadastro ─────────────────────────────────────────────────────────
+
+export interface CadastroStep {
+  number: number;
+  label: string;
+  desc: string;
 }
 
-// ── Auth ──────────────────────────────────────────────────────
-export interface LoginCredentials {
-  email:     string;
-  password:  string;
-  remember?: boolean;
-}
-
-export interface AuthTokenPayload {
-  sub:   string;
-  name:  string;
-  email: string;
-  role:  'tecnico' | 'consulta';
-  iat:   number;
-  exp:   number;
-}
-
-export interface AuthUser {
-  name:     string;
-  email:    string;
-  role:     'tecnico' | 'consulta';
-  initials: string;
-}
+export const CADASTRO_STEPS: CadastroStep[] = [
+  { number: 1, label: "Identificação do Processo", desc: "SAIPS, NUP, situação, diligência" },
+  { number: 2, label: "Impacto Financeiro", desc: "Mensal, anual, parcela única" },
+  { number: 3, label: "Localização", desc: "UF, município, região" },
+  { number: 4, label: "Estabelecimento", desc: "CNES, CNPJ, nome" },
+  { number: 5, label: "Habilitação", desc: "Código e tipo solicitado" },
+  { number: 6, label: "Histórico", desc: "Primeira hab. e alterações" },
+];

@@ -1,30 +1,22 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/auth';
-import { FormDataProvider } from '@/contexts/FormDataContext';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
+"use client";
+
+import React, { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+
+const PUBLIC_PATHS = ["/senha"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [checked, setChecked] = useState(false);
+  const pathname = usePathname();
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.replace('/login');
-    } else {
-      setChecked(true);
-    }
-  }, [router]);
+    if (!isLoading && !isPublic && !isAuthenticated) router.replace("/login");
+  }, [isAuthenticated, isLoading, isPublic, router]);
 
-  if (!checked) {
-    return (
-      <Box display="flex" alignItems="center" justifyContent="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  return <FormDataProvider>{children}</FormDataProvider>;
+  if (isLoading) return null;
+  if (!isPublic && !isAuthenticated) return null;
+  return <>{children}</>;
 }
