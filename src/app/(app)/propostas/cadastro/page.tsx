@@ -3,6 +3,8 @@
 import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { getCnes, createProposta, getInfo } from "@/services/api";
+import { CnesEstabelecimento, Diligencia, TipoHabilitacao, Tecnico, SituacaoProposta, TipoFinanciamento } from "@/types";
 
 const V = {
   verde: "#1B5E3B", verdeMed: "#2E7D52", verdeCla: "#3DA06A", verdeBg: "#EAF4EF",
@@ -11,22 +13,8 @@ const V = {
   cinzaT: "#6B7B6E", texto: "#1A2E20", erro: "#C0392B",
 };
 
-// ── CNES mock DB (fiel ao HTML) ────────────────────────────────────────────────
-const CNES_DB: Record<string, { nome: string; cnpj: string; natureza: string; gestao: string; uf: string; ibge_mun: string; municipio: string; regiao: string; ibge_reg: string; macro: string }> = {
-  "2084163": { nome: "Hospital Estadual de Diadema – Hospital Serraria", cnpj: "46.374.500/0136-87", natureza: "PÚBLICA", gestao: "Estadual", uf: "SP", ibge_mun: "351380", municipio: "Diadema", regiao: "GRANDE ABC", ibge_reg: "35015", macro: "RRAS1" },
-  "2080273": { nome: "Hospital Estadual Mário Covas de Santo André", cnpj: "46.374.500/0144-97", natureza: "PÚBLICA", gestao: "Estadual", uf: "SP", ibge_mun: "354780", municipio: "Santo André", regiao: "GRANDE ABC", ibge_reg: "35015", macro: "RRAS1" },
-  "2077531": { nome: "A C Camargo Cancer Center", cnpj: "60.961.968/0001-06", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Municipal", uf: "SP", ibge_mun: "355030", municipio: "São Paulo", regiao: "SÃO PAULO", ibge_reg: "35016", macro: "RRAS6" },
-  "2078015": { nome: "HC da FMUSP – Hospital das Clínicas São Paulo", cnpj: "56.577.059/0001-00", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Estadual", uf: "SP", ibge_mun: "355030", municipio: "São Paulo", regiao: "SÃO PAULO", ibge_reg: "35016", macro: "RRAS6" },
-  "2083086": { nome: "Hospital Amaral Carvalho", cnpj: "50.753.755/0001-35", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Estadual", uf: "SP", ibge_mun: "352530", municipio: "Jaú", regiao: "VALE DAS CACHOEIRAS", ibge_reg: "35133", macro: "RRAS13" },
-  "2066572": { nome: "Hospital Heliópolis – UGA I", cnpj: "46.374.500/0115-52", natureza: "PÚBLICA", gestao: "Estadual", uf: "SP", ibge_mun: "355030", municipio: "São Paulo", regiao: "SÃO PAULO", ibge_reg: "35016", macro: "RRAS6" },
-  "2600536": { nome: "Hospital Regional de Araguaína", cnpj: "25.053.117/0053-95", natureza: "PÚBLICA", gestao: "Estadual", uf: "TO", ibge_mun: "170210", municipio: "Araguaína", regiao: "MÉDIO NORTE ARAGUAIA", ibge_reg: "17001", macro: "Macrorregião Norte" },
-  "2058790": { nome: "Hospital Municipal Dr. Waldemar Tebaldi", cnpj: "45.781.176/0001-66", natureza: "PÚBLICA", gestao: "Municipal", uf: "SP", ibge_mun: "350160", municipio: "Americana", regiao: "REGIÃO METROPOLITANA DE CAMPINAS", ibge_reg: "35072", macro: "RRAS15" },
-  "2784602": { nome: "Hospital Augusto de Oliveira Camargo", cnpj: "60.499.365/0002-15", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Municipal", uf: "SP", ibge_mun: "352050", municipio: "Indaiatuba", regiao: "REGIÃO METROPOLITANA DE CAMPINAS", ibge_reg: "35072", macro: "RRAS15" },
-  "7400926": { nome: "Fundação Hospital Regional do Câncer", cnpj: "11.636.872/0001-67", natureza: "PRIVADA SEM FINS LUCRATIVOS", gestao: "Estadual", uf: "SP", ibge_mun: "354140", municipio: "Presidente Prudente", regiao: "ALTA SOROCABANA", ibge_reg: "35112", macro: "RRAS11" },
-  "0000477": { nome: "Hospital Recife", cnpj: "00.000.000/0000-00", natureza: "PÚBLICA", gestao: "Municipal", uf: "PE", ibge_mun: "261606", municipio: "Recife", regiao: "Região I Recife", ibge_reg: "261", macro: "Macrorregião Recife" },
-};
-
-const DILIGENCIAS = [
+// ── Fallback estático (usado se a API não responder) ───────────────────────────
+const DILIGENCIAS_FALLBACK: string[] = [
   "Deliberação CIB",
   "Link do Plano de Atenção para o Diagnóstico e o Tratamento do Câncer",
   "Relatório de vistoria realizada pela Vigilância Sanitária",
@@ -40,7 +28,7 @@ const DILIGENCIAS = [
   "Licença Sanitária",
 ];
 
-const HAB_CHIPS = [
+const HAB_CHIPS_FALLBACK = [
   { cod: "17.04", nome: "Serviço Isolado de Radioterapia" },
   { cod: "17.06", nome: "UNACON" },
   { cod: "17.07", nome: "UNACON com Serviço de Radioterapia" },
@@ -65,7 +53,6 @@ const STEPS = [
 
 const SITUACOES = ["Enviada ao MS", "Em análise", "Em diligência", "Rejeitada", "Rejeitada por não atendimento à diligência", "Aprovada", "Portaria Publicada", "Enviada ao DRAC", "Proposta excluída", "Proposta concluída"];
 const FINS = ["", "CHARR", "MAC", "FAEC", "MAC e FAEC", "Não há ônus para o MS"];
-const TECNICOS = ["Tayana.pinheiro", "Thaynara.souza", "Tatiana.rcardoso"];
 
 function FieldAuto({ label, value }: { label: string; value?: string }) {
   return (
@@ -102,11 +89,18 @@ export default function CadastroPage() {
 
   const [step, setStep] = useState(1);
 
+  // ── Estado da API ─────────────────────────────────────────────────────────
+  const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
+  const [diligencias, setDiligencias] = useState<string[]>(DILIGENCIAS_FALLBACK);
+  const [habChips, setHabChips] = useState<{ cod: string; nome: string }[]>(HAB_CHIPS_FALLBACK);
+  const [submitting, setSubmitting] = useState(false);
+
   // Etapa 1
+  const [saips, setSaips] = useState("");
   const [nup, setNup] = useState("");
   const [situacao, setSituacao] = useState("Enviada ao MS");
   const [tipoFin, setTipoFin] = useState("FAEC");
-  const [tecnico, setTecnico] = useState("Tayana.pinheiro");
+  const [tecnicoId, setTecnicoId] = useState<number>(0);
   const [portaria, setPortaria] = useState("");
   const [diligSel, setDiligSel] = useState<string[]>([]);
   const [dtSaips, setDtSaips] = useState("");
@@ -121,7 +115,7 @@ export default function CadastroPage() {
   // Etapa 3+4 (CNES)
   const [cnesVal, setCnesVal] = useState("");
   const [cnesLoading, setCnesLoading] = useState(false);
-  const [cnesData, setCnesData] = useState<typeof CNES_DB[string] | null>(null);
+  const [cnesData, setCnesData] = useState<CnesEstabelecimento | null>(null);
   const [aceleradores, setAceleradores] = useState("");
 
   // Etapa 5
@@ -135,7 +129,25 @@ export default function CadastroPage() {
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
-  // Scroll spy: atualiza step ativo conforme seções entram na viewport
+  // ── Carrega dados da API ao montar ──────────────────────────────────────────
+  useEffect(() => {
+    getInfo()
+      .then(({ technicians, diligencia, tipoHabilitacao }) => {
+        if (technicians.length > 0) {
+          setTecnicos(technicians);
+          setTecnicoId(technicians[0].id);
+        }
+        if (diligencia.length > 0) {
+          setDiligencias(diligencia.map((d) => d.title));
+        }
+        if (tipoHabilitacao.length > 0) {
+          setHabChips(tipoHabilitacao.map((h) => ({ cod: h.codigo, nome: h.descricao })));
+        }
+      })
+      .catch(() => { /* mantém fallbacks estáticos */ });
+  }, []);
+
+  // ── Scroll spy ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const sectionNums = [1, 2, 3, 4, 5, 6];
     const onScroll = () => {
@@ -160,10 +172,11 @@ export default function CadastroPage() {
     if (!raw) return;
     try {
       const d = JSON.parse(raw);
+      if (d.saips !== undefined) setSaips(d.saips);
       if (d.nup !== undefined) setNup(d.nup);
       if (d.situacao) setSituacao(d.situacao);
       if (d.tipoFin) setTipoFin(d.tipoFin);
-      if (d.tecnico) setTecnico(d.tecnico);
+      if (d.tecnicoId) setTecnicoId(d.tecnicoId);
       if (d.portaria !== undefined) setPortaria(d.portaria);
       if (d.diligSel) setDiligSel(d.diligSel);
       if (d.dtSaips !== undefined) setDtSaips(d.dtSaips);
@@ -171,7 +184,7 @@ export default function CadastroPage() {
       if (d.dtDrac !== undefined) setDtDrac(d.dtDrac);
       if (d.mensal !== undefined) setMensal(d.mensal);
       if (d.parcela !== undefined) setParcela(d.parcela);
-      if (d.cnesVal) { setCnesVal(d.cnesVal); if (CNES_DB[d.cnesVal]) setCnesData(CNES_DB[d.cnesVal]); }
+      if (d.cnesVal) { setCnesVal(d.cnesVal); }
       if (d.aceleradores !== undefined) setAceleradores(d.aceleradores);
       if (d.habSel) setHabSel(d.habSel);
       if (d.histAno !== undefined) setHistAno(d.histAno);
@@ -182,7 +195,7 @@ export default function CadastroPage() {
 
   const salvarRascunho = () => {
     const data = {
-      nup, situacao, tipoFin, tecnico, portaria, diligSel,
+      saips, nup, situacao, tipoFin, tecnicoId, portaria, diligSel,
       dtSaips, dtDecan, dtDrac, mensal, parcela,
       cnesVal, aceleradores, habSel, histAno, histCod, alteracoes,
     };
@@ -198,11 +211,10 @@ export default function CadastroPage() {
     setCnesData(null);
     if (val.length < 7) return;
     setCnesLoading(true);
-    setTimeout(() => {
-      const found = CNES_DB[val] ?? null;
-      setCnesData(found);
-      setCnesLoading(false);
-    }, 600);
+    getCnes(val.padStart(7, "0"))
+      .then((data) => setCnesData(data))
+      .catch(() => setCnesData(null))
+      .finally(() => setCnesLoading(false));
   };
 
   // Toggle diligência
@@ -213,13 +225,55 @@ export default function CadastroPage() {
   const toggleHab = (cod: string) =>
     setHabSel((prev) => prev.includes(cod) ? prev.filter((x) => x !== cod) : [...prev, cod]);
 
-  const habNomes = habSel.map((c) => HAB_CHIPS.find((h) => h.cod === c)?.nome ?? "").join(", ");
+  const habNomes = habSel.map((c) => habChips.find((h) => h.cod === c)?.nome ?? "").join(", ");
 
-  const submitForm = () => {
-    localStorage.removeItem("sah_rascunho");
-    setToastMsg("✅ Proposta enviada com sucesso!");
-    setToast(true);
-    setTimeout(() => { setToast(false); router.push("/propostas"); }, 1800);
+  const submitForm = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await createProposta({
+        saips,
+        nup,
+        situacao: situacao as SituacaoProposta,
+        tipoFinanciamento: tipoFin as TipoFinanciamento,
+        tecnicoId,
+        numPortaria: portaria,
+        diligencias: diligSel,
+        dataInicioSaips: dtSaips,
+        dataEntradaDecan: dtDecan,
+        dataEnvioDrac: dtDrac,
+        impactoMensal: mensal ? parseFloat(mensal.replace(/\./g, "").replace(",", ".")) : undefined,
+        parcelaUnica: parcela ? parseFloat(parcela.replace(/\./g, "").replace(",", ".")) : undefined,
+        cnes: cnesVal.padStart(7, "0"),
+        nomeEstabelecimento: cnesData?.nomeEstabelecimento,
+        cnpj: cnesData?.cnpj,
+        naturezaJuridica: cnesData?.naturezaJuridica,
+        gestao: cnesData?.gestao,
+        numAceleradores: aceleradores ? Number(aceleradores) : 0,
+        uf: cnesData?.uf,
+        ibgeMunicipio: cnesData?.ibgeMunicipio,
+        nomeMunicipio: cnesData?.nomeMunicipio,
+        regiaoSaude: cnesData?.regiaoSaude,
+        ibgeRegiao: cnesData?.ibgeRegiao,
+        macrorregiao: cnesData?.macrorregiao,
+        codigosHabilitacao: habSel,
+        historicoAlteracoes: [
+          ...(histAno && histCod ? [{ ano: Number(histAno), codigos: histCod }] : []),
+          ...alteracoes.map((a) => ({ ano: Number(a.ano), codigos: a.cod })),
+        ],
+      });
+      localStorage.removeItem("sah_rascunho");
+      setToastMsg("✅ Proposta enviada com sucesso!");
+      setToast(true);
+      setTimeout(() => { setToast(false); router.push("/propostas"); }, 1800);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao salvar proposta";
+      setToastMsg(`❌ ${msg}`);
+      setToast(true);
+      setTimeout(() => setToast(false), 3000);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const sectionStyle: CSSProperties = {
@@ -308,7 +362,9 @@ export default function CadastroPage() {
                 </div>
                 <div style={{ fontSize: 12, color: V.cinzaT, marginBottom: 22, paddingLeft: 18 }}>Dados de identificação e tramitação administrativa</div>
                 <div style={grid2}>
-                  <FieldAuto label="SAIPS (automático)" value="—" />
+                  <Field label="SAIPS" req hint="Número do processo no SAIPS">
+                    <input className="inp-f" value={saips} onChange={(e) => setSaips(e.target.value)} placeholder="Ex: 1234567890" maxLength={10} style={inp()} />
+                  </Field>
                   <Field label="NUP" req hint="">
                     <input className="inp-f" value={nup} onChange={(e) => setNup(e.target.value)} placeholder="00000.000000/0000-00" style={inp()} />
                   </Field>
@@ -323,8 +379,10 @@ export default function CadastroPage() {
                     </select>
                   </Field>
                   <Field label="Técnico Responsável" req>
-                    <select className="inp-f" value={tecnico} onChange={(e) => setTecnico(e.target.value)} style={inp()}>
-                      {TECNICOS.map((t) => <option key={t}>{t}</option>)}
+                    <select className="inp-f" value={tecnicoId} onChange={(e) => setTecnicoId(Number(e.target.value))} style={inp()}>
+                      {tecnicos.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name} {t.surname}</option>
+                      ))}
                     </select>
                   </Field>
                   <Field label="Nº Portaria de Habilitação">
@@ -339,7 +397,7 @@ export default function CadastroPage() {
                     <span style={{ fontSize: 10, fontWeight: 400, color: "#a0643a", marginLeft: 6 }}>Opcional — selecione uma ou mais</span>
                   </label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {DILIGENCIAS.map((d) => (
+                    {diligencias.map((d) => (
                       <div key={d} className="dil-chip-h" onClick={() => toggleDil(d)}
                         style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${diligSel.includes(d) ? V.laranja : "#FFCC80"}`, fontSize: 11, fontWeight: diligSel.includes(d) ? 600 : 500, color: diligSel.includes(d) ? "#fff" : "#7A3800", cursor: "pointer", transition: "all .15s", background: diligSel.includes(d) ? V.laranja : "#fff", userSelect: "none" }}>
                         {d}
@@ -436,7 +494,7 @@ export default function CadastroPage() {
                       <span style={{ fontSize: 11, color: V.cinzaT }}>7 dígitos — dados preenchidos automaticamente</span>
                     </div>
                     <div style={{ alignSelf: "center", fontSize: 12, color: V.cinzaT, paddingTop: 18 }}>
-                      {cnesLoading ? "Consultando..." : cnesData ? `✅ ${cnesData.nome}` : cnesVal.length > 0 && cnesVal.length < 7 ? "Digite 7 dígitos" : ""}
+                      {cnesLoading ? "Consultando..." : cnesData ? `✅ ${cnesData.nomeEstabelecimento}` : cnesVal.length > 0 && cnesVal.length < 7 ? "Digite 7 dígitos" : ""}
                     </div>
                   </div>
                 </div>
@@ -447,9 +505,9 @@ export default function CadastroPage() {
                     Dados do Estabelecimento
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-                    <div style={{ gridColumn: "1/-1" }}><FieldAuto label="Nome do Estabelecimento" value={cnesData?.nome} /></div>
+                    <div style={{ gridColumn: "1/-1" }}><FieldAuto label="Nome do Estabelecimento" value={cnesData?.nomeEstabelecimento} /></div>
                     <FieldAuto label="CNPJ" value={cnesData?.cnpj} />
-                    <FieldAuto label="Natureza Jurídica" value={cnesData?.natureza} />
+                    <FieldAuto label="Natureza Jurídica" value={cnesData?.naturezaJuridica} />
                     <FieldAuto label="Gestão" value={cnesData?.gestao} />
                     <Field label="Nº Aceleradores / Cobaltos" hint="Único campo a preencher manualmente">
                       <input className="inp-f" type="number" min="0" value={aceleradores} onChange={(e) => setAceleradores(e.target.value)} placeholder="Informar manualmente" style={inp()} />
@@ -461,11 +519,11 @@ export default function CadastroPage() {
                   </div>
                   <div id="sec-4" style={grid3}>
                     <FieldAuto label="UF" value={cnesData?.uf} />
-                    <FieldAuto label="IBGE do Município" value={cnesData?.ibge_mun} />
-                    <FieldAuto label="Nome do Município" value={cnesData?.municipio} />
-                    <FieldAuto label="Região de Saúde" value={cnesData?.regiao} />
-                    <FieldAuto label="IBGE Região de Saúde" value={cnesData?.ibge_reg} />
-                    <FieldAuto label="Macrorregião de Saúde" value={cnesData?.macro} />
+                    <FieldAuto label="IBGE do Município" value={cnesData?.ibgeMunicipio} />
+                    <FieldAuto label="Nome do Município" value={cnesData?.nomeMunicipio} />
+                    <FieldAuto label="Região de Saúde" value={cnesData?.regiaoSaude} />
+                    <FieldAuto label="IBGE Região de Saúde" value={cnesData?.ibgeRegiao} />
+                    <FieldAuto label="Macrorregião de Saúde" value={cnesData?.macrorregiao} />
                   </div>
                 </div>
               </div>
@@ -486,7 +544,7 @@ export default function CadastroPage() {
                 </div>
 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
-                  {HAB_CHIPS.map((h) => (
+                  {habChips.map((h) => (
                     <div key={h.cod} className="hab-chip-h" onClick={() => toggleHab(h.cod)}
                       style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${habSel.includes(h.cod) ? V.verdeMed : V.cinzaB}`, fontSize: 12, fontWeight: habSel.includes(h.cod) ? 600 : 500, color: habSel.includes(h.cod) ? V.verde : V.cinzaT, cursor: "pointer", transition: "all .15s", background: habSel.includes(h.cod) ? V.verdeBg : V.cinzaF, userSelect: "none" }}>
                       {h.cod}
@@ -499,7 +557,7 @@ export default function CadastroPage() {
                     <div style={{ fontSize: 11, fontWeight: 600, color: V.cinzaT, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 8 }}>Habilitação(ões) selecionada(s)</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       {habSel.map((cod) => {
-                        const h = HAB_CHIPS.find((x) => x.cod === cod)!;
+                        const h = habChips.find((x) => x.cod === cod) ?? { cod, nome: cod };
                         return (
                           <div key={cod} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: V.verdeBg, borderRadius: 8, border: `1px solid ${V.cinzaB}` }}>
                             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 700, color: V.verde, background: "#fff", padding: "2px 8px", borderRadius: 4, border: `1px solid ${V.cinzaB}` }}>{cod}</span>
@@ -572,7 +630,7 @@ export default function CadastroPage() {
                 <button className="btn-outline-h" onClick={salvarRascunho} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "transparent", color: V.cinzaT, fontFamily: "'Sora',sans-serif", fontSize: 13, fontWeight: 600, border: `1.5px solid ${V.cinzaB}`, borderRadius: 8, cursor: "pointer", transition: "all .2s" }}>
                   💾 Salvar rascunho
                 </button>
-                <button className="btn-primary-h" onClick={submitForm}
+                <button className="btn-primary-h" onClick={submitForm} disabled={submitting}
                   style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", background: V.verde, color: "#fff", fontFamily: "'Sora',sans-serif", fontSize: 13, fontWeight: 600, border: "none", borderRadius: 8, cursor: "pointer", transition: "all .2s" }}>
                   Enviar proposta →
                 </button>

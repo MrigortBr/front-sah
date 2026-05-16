@@ -24,7 +24,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [perfil, setPerfil] = useState<"tecnico" | "consulta">("tecnico");
-  const [loginVal, setLoginVal] = useState("");
+  const [loginVal, setLoginVal] = useState(""); // armazena e-mail
   const [senha, setSenha] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -199,16 +199,16 @@ export default function LoginPage() {
             {/* Login */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: V.texto, marginBottom: 7 }}>
-                Login <span style={{ color: V.erro }}>*</span>
+                E-mail institucional <span style={{ color: V.erro }}>*</span>
               </label>
               <div style={{ position: "relative" }}>
                 <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: V.cinzaT, fontSize: 15, pointerEvents: "none" }}>👤</span>
-                <input className="inp-focus" type="text" value={loginVal}
+                <input className="inp-focus" type="email" value={loginVal}
                   onChange={(e) => setLoginVal(e.target.value)}
-                  placeholder="usuario.nome" autoComplete="username"
+                  placeholder="usuario@saude.gov.br" autoComplete="email"
                   style={inputStyle(errLogin)} />
               </div>
-              {errLogin && <div style={{ fontSize: 11, color: V.erro, marginTop: 5 }}>Informe seu login institucional.</div>}
+              {errLogin && <div style={{ fontSize: 11, color: V.erro, marginTop: 5 }}>Informe seu e-mail institucional.</div>}
             </div>
 
             {/* Senha */}

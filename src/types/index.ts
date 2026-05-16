@@ -91,7 +91,8 @@ export interface Proposta {
   tipoFinanciamento?: TipoFinanciamento;
   tecnicoId: number;
   numPortaria?: string;
-  diligencias: number[];
+  /** Títulos das diligências (string[]) — a API recebe os títulos, não IDs */
+  diligencias: string[];
   dataInicioSaips?: string;
   dataEntradaDecan?: string;
   dataEnvioDrac?: string;
@@ -119,6 +120,20 @@ export interface Proposta {
   historicoFirstYear?: number;
   historicoFirstCodigos?: string;
   historicoAlteracoes?: HistoricoHabilitacao[];
+}
+
+// ─── Proposta Simplificada (lista) ────────────────────────────────────────────
+
+export interface PropostaSimples {
+  id: number;
+  cnes: string;
+  nome: string;
+  uf: string;
+  cod: string;
+  hab: string;
+  situacao: string;
+  tecnico: string | null;
+  entrada: string;
 }
 
 // ─── Info da API ──────────────────────────────────────────────────────────────

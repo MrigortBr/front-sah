@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tecnico } from "@/types";
-import { getTechnicians } from "@/services/api";
+import { getInfo } from "@/services/api";
 
 export function useTechnicians() {
   const [technicians, setTechnicians] = useState<Tecnico[]>([]);
@@ -12,16 +12,18 @@ export function useTechnicians() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getTechnicians()
-      .then((data) => { if (active) setTechnicians(data); })
+    getInfo()
+      .then((data) => {
+        if (active) setTechnicians(data.technicians);
+      })
       .catch(() => {
         if (active) {
-          // Fallback: usa dados do retorno.json mockado enquanto API não tem endpoint dedicado
-          setTechnicians([{ id: 1, name: "Igor", surname: "Lins" }]);
-          setError("Usando dados locais — endpoint de técnicos indisponível");
+          setError("Não foi possível carregar técnicos.");
         }
       })
-      .finally(() => { if (active) setLoading(false); });
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => { active = false; };
   }, []);
 
