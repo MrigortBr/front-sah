@@ -1,5 +1,6 @@
 // LoginPage.jsx
 
+import Footer from "@/components/footer/page";
 import HeroPanel from "@/components/HeroPanel/page";
 import LoginPanel from "@/components/LoginPanel/page";
 import styled from "styled-components";
@@ -9,11 +10,12 @@ export default function LoginPage() {
         <Container>
             <HeroPanel />
             <LoginPanel />
+            <Footer></Footer>
         </Container>
     );
 }
 
-const Container = styled.div`
+export const Container = styled.div`
     width: 100%;
 
     height: 100vh;
@@ -22,8 +24,14 @@ const Container = styled.div`
 
     display: grid;
     grid-template-columns: 1fr 30rem;
+    grid-template-rows: 90vh 10vh;
 
     @media (max-width: 980px) {
         grid-template-columns: 1fr;
+    }
+
+    & > footer {
+        grid-column-start: 1;
+        grid-column-end: 3;
     }
 `;

@@ -1,4 +1,5 @@
 "use client";
+import { useAuth } from "@/context/auth/auth.context";
 import {
     Container,
     Content,
@@ -21,10 +22,32 @@ import {
     Title,
     Version,
 } from "./styled";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
+import { useAlert } from "@/providers/alert/page";
+import { validateLogin } from "@/utils/validateEmail";
 
 export default function LoginPanel() {
-    const [profileAcess, setProfileAcess] = useState(true);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const { login } = useAuth();
+    const { callMessage } = useAlert();
+
+    async function handleLogin(e: MouseEvent<HTMLButtonElement>) {
+        e.preventDefault();
+
+        const response = validateLogin({ email, password });
+
+        if (!response.valid) {
+            if (response.errors.email) callMessage(response.errors.email, "warning");
+            else if (response.errors.password) callMessage(response.errors.password, "warning");
+
+            return null;
+        }
+
+        const responseLogin = await login(email, password);
+
+        if (!responseLogin.status) callMessage(responseLogin.message, "error");
+    }
 
     return (
         <Container>
@@ -40,41 +63,23 @@ export default function LoginPanel() {
                 <Form>
                     <SectionLabel>Perfil de acesso</SectionLabel>
 
-                    <ProfileGrid>
-                        <ProfileCard $active={profileAcess} onClick={() => setProfileAcess((o) => !o)}>
-                            <ProfileIcon>🔬</ProfileIcon>
-
-                            <div>
-                                <ProfileName>Técnico</ProfileName>
-                                <ProfileDescription>DECAN / MS</ProfileDescription>
-                            </div>
-                        </ProfileCard>
-
-                        <ProfileCard $active={!profileAcess} onClick={() => setProfileAcess((o) => !o)}>
-                            <ProfileIcon>📋</ProfileIcon>
-
-                            <div>
-                                <ProfileName>Consulta</ProfileName>
-                                <ProfileDescription>Somente leitura</ProfileDescription>
-                            </div>
-                        </ProfileCard>
-                    </ProfileGrid>
-
                     <Field>
                         <label>Login</label>
 
-                        <Input placeholder="usuario.nome" />
+                        <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" />
                     </Field>
 
                     <Field>
                         <label>Senha</label>
 
-                        <Input type="password" placeholder="••••••••" />
+                        <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" />
                     </Field>
 
                     <ForgotPassword href="#">Esqueceu a senha?</ForgotPassword>
 
-                    <LoginButton type="submit">Entrar no sistema</LoginButton>
+                    <LoginButton type="submit" onClick={handleLogin}>
+                        Entrar no sistema
+                    </LoginButton>
                 </Form>
 
                 <Footer>

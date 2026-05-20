@@ -1,0 +1,108 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { User } from "@/context/auth/type";
+import { api } from "./api";
+import axios from "axios";
+import { Response } from "./proposal/type";
+
+interface LoginPayload {
+    email: string;
+    password: string;
+}
+
+export interface LoginResponse {
+    data: { jwt: string };
+    statusCode: number;
+    status: boolean;
+    message: string;
+}
+
+class AuthService {
+    async login({ email, password }: LoginPayload): Promise<LoginResponse> {
+        try {
+            const response = await api.post<LoginResponse>("/login", {
+                email,
+                password,
+            });
+
+            const { jwt } = response.data.data;
+
+            localStorage.setItem("sah_token", jwt);
+
+            response.data.status = true;
+
+            return response.data;
+        } catch (err: any) {
+            err.response.data.status = false;
+
+            return err.response.data;
+        }
+    }
+
+    async logout(): Promise<LoginResponse> {
+        try {
+            const response = await api.delete<LoginResponse>("/loggout");
+            localStorage.removeItem("sah_token");
+
+            if (typeof window !== "undefined") {
+                window.location.href = "/";
+            }
+
+            response.data.status = true;
+            return response.data;
+        } catch (err: any) {
+            err.response.data.status = false;
+
+            return err.response.data;
+        }
+    }
+
+    getToken(): string | null {
+        return localStorage.getItem("sah_token");
+    }
+
+    isAuthenticated(): boolean {
+        return !!this.getToken();
+    }
+
+    getUser(): User | null {
+        const token = this.getToken();
+
+        if (!token) return null;
+
+        try {
+            const payload = token.split(".")[1];
+
+            const decoded: User = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+
+            const iat = new Date(decoded.iat * 1000);
+            const exp = new Date(decoded.exp * 1000);
+            const now = new Date();
+
+            if (exp < now) return null;
+
+            decoded.expires = exp;
+            decoded.created = iat;
+
+            return decoded;
+        } catch {
+            return null;
+        }
+    }
+
+    private goCatch(err: unknown) {
+        if (axios.isAxiosError<Response<LoginResponse[]>>(err)) {
+            return {
+                ...err.response?.data,
+                status: false,
+            } as Response<LoginResponse[]>;
+        }
+
+        return {
+            status: false,
+            data: {},
+            message: "Erro desconhecido",
+        } as Response<LoginResponse[]>;
+    }
+}
+
+export const authService = new AuthService();

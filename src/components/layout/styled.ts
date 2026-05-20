@@ -1,0 +1,28 @@
+import styled from "styled-components";
+
+export const Container = styled.div`
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+`;
+
+export const Header = styled.header`
+    height: 9vh;
+    min-height: 9vh;
+`;
+
+export const Content = styled.main`
+    height: 81vh;
+    min-height: 81vh;
+
+    overflow-y: auto;
+`;
+
+export const Footer = styled.footer`
+    height: 10vh;
+    min-height: 10vh;
+`;

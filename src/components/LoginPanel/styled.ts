@@ -2,9 +2,9 @@ import styled from "styled-components";
 
 export const Container = styled.section`
     width: 100%;
-    min-height: 100vh;
+    max-height: 90vh;
 
-    background: white;
+    background: ${({ theme }) => theme.colors.white};
 
     display: flex;
     align-items: center;
@@ -16,15 +16,12 @@ export const Container = styled.section`
 
     &::before {
         content: "";
-
         position: absolute;
         left: 0;
         top: 0;
-
         width: 0.3rem;
         height: 100%;
-
-        background: linear-gradient(180deg, #ffcd00, #3da06a);
+        background: linear-gradient(180deg, ${({ theme }) => theme.colors.yellowVibrant}, ${({ theme }) => theme.colors.greenBackground});
     }
 `;
 
@@ -34,34 +31,34 @@ export const Content = styled.div`
 `;
 
 export const Header = styled.div`
+    margin-top: 7vh;
     margin-bottom: 2rem;
 `;
 
 export const Eyebrow = styled.p`
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
 
     letter-spacing: 0.15em;
     text-transform: uppercase;
 
-    color: #2e7d52;
+    color: ${({ theme }) => theme.colors.greenLight};
 
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.2rem;
 `;
 
 export const Title = styled.h2`
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: ${({ theme }) => theme.fontSizes.xl};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    color: ${({ theme }) => theme.colors.greenDark};
 
-    color: #1a2e20;
-
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
 `;
 
 export const Description = styled.p`
-    color: #6b7b6e;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.gray};
 
-    font-size: 0.9rem;
     line-height: 1.7;
 `;
 
@@ -71,12 +68,12 @@ export const Form = styled.form`
 `;
 
 export const SectionLabel = styled.p`
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-weight: ${({ theme }) => theme.fontWeights.regular};
 
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 
-    color: #1a2e20;
+    color: ${({ theme }) => theme.colors.greenDark};
 `;
 
 export const ProfileGrid = styled.div`
@@ -85,11 +82,11 @@ export const ProfileGrid = styled.div`
 
     gap: 0.8rem;
 
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 `;
 
 export const ProfileCard = styled.div<{ $active: boolean }>`
-    padding: 1rem;
+    padding: 0.5rem;
 
     border-radius: 0.8rem;
 
@@ -114,9 +111,9 @@ export const ProfileIcon = styled.div`
     width: 2.5rem;
     height: 2.5rem;
 
-    border-radius: 0.7rem;
+    border-radius: ${({ theme }) => theme.borderRadius.md};
 
-    background: #1b5e3b;
+    background: ${({ theme }) => theme.colors.greenBackground};
 
     display: flex;
     align-items: center;
@@ -124,16 +121,16 @@ export const ProfileIcon = styled.div`
 `;
 
 export const ProfileName = styled.div`
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
 
-    color: #1a2e20;
+    color: ${({ theme }) => theme.colors.greenDark};
 `;
 
 export const ProfileDescription = styled.div`
-    font-size: 0.7rem;
+    font-size: ${({ theme }) => theme.fontSizes.xxs};
 
-    color: #6b7b6e;
+    color: ${({ theme }) => theme.colors.gray};
 `;
 
 export const Field = styled.div`
@@ -145,10 +142,10 @@ export const Field = styled.div`
     margin-bottom: 1.2rem;
 
     label {
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        font-weight: ${({ theme }) => theme.fontWeights.medium};
 
-        color: #1a2e20;
+        color: ${({ theme }) => theme.colors.greenDark};
     }
 `;
 
@@ -159,17 +156,17 @@ export const Input = styled.input`
 
     border-radius: 0.7rem;
 
-    border: 1.5px solid #e4ebe6;
+    border: 1.5px solid ${({ theme }) => theme.colors.grayUltraLight};
 
-    background: #f4f6f4;
+    background: ${({ theme }) => theme.colors.grayLight};
 
     outline: none;
 
     transition: 0.2s;
 
     &:focus {
-        border-color: #2e7d52;
-        background: white;
+        border-color: ${({ theme }) => theme.colors.greenLight};
+        background: ${({ theme }) => theme.colors.white};
     }
 `;
 
@@ -179,9 +176,9 @@ export const ForgotPassword = styled.a`
     margin-left: auto;
     margin-bottom: 1.5rem;
 
-    color: #2e7d52;
+    color: ${({ theme }) => theme.colors.greenLight};
 
-    font-size: 0.8rem;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
 
     text-decoration: none;
 
@@ -198,19 +195,19 @@ export const LoginButton = styled.button`
     border: none;
     border-radius: 0.8rem;
 
-    background: #1b5e3b;
+    background: ${({ theme }) => theme.colors.greenBackground};
 
-    color: white;
+    color: ${({ theme }) => theme.colors.white};
 
-    font-size: 0.9rem;
-    font-weight: 700;
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
 
     cursor: pointer;
 
     transition: 0.2s;
 
     &:hover {
-        background: #2e7d52;
+        background: ${({ theme }) => theme.colors.greenLight};
         transform: translateY(-1px);
     }
 `;
@@ -218,7 +215,7 @@ export const LoginButton = styled.button`
 export const Footer = styled.div`
     margin-top: 2rem;
 
-    padding-top: 1.2rem;
+    padding-top: 0.5rem;
 
     border-top: 1px solid #e4ebe6;
 
@@ -229,12 +226,13 @@ export const Footer = styled.div`
     gap: 1rem;
 
     flex-wrap: wrap;
+    margin-bottom: 6vh;
 `;
 
 export const Version = styled.span`
-    font-size: 0.7rem;
+    font-size: ${({ theme }) => theme.fontSizes.xxs};
 
-    color: #a0aca4;
+    color: ${({ theme }) => theme.colors.gray};
 `;
 
 export const Links = styled.div`
@@ -242,9 +240,9 @@ export const Links = styled.div`
     gap: 1rem;
 
     a {
-        color: #6b7b6e;
+        color: ${({ theme }) => theme.colors.gray};
 
-        font-size: 0.72rem;
+        font-size: ${({ theme }) => theme.fontSizes.xxs};
 
         text-decoration: none;
 
