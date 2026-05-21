@@ -1,4 +1,5 @@
-import { LoginResponse } from "@/services/auth.service";
+import { jwt, LoginResponse } from "@/services/auth.service";
+import { Response } from "@/services/proposal/type";
 
 export interface User {
     id_permission: number;
@@ -19,7 +20,7 @@ export interface AuthContextData {
     isLoading: boolean;
     isPagePermitted: boolean;
 
-    login: (email: string, password: string) => Promise<LoginResponse>;
+    login: (email: string, password: string) => Promise<Response<jwt>>;
 
     logout: () => Promise<LoginResponse>;
 }

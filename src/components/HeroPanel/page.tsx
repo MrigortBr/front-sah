@@ -1,22 +1,6 @@
 "use client";
 
-import {
-    Bottom,
-    Container,
-    Content,
-    DotsGrid,
-    GovBar,
-    GovLogo,
-    GovText,
-    HeroLabel,
-    HeroSub,
-    HeroTitle,
-    StatItem,
-    StatLabel,
-    StatNumber,
-    StatsRow,
-    Top,
-} from "./styled";
+import { Container, Content, DotsGrid, GovBar, GovLogo, GovText, HeroLabel, HeroSub, HeroTitle, Top } from "./styled";
 
 export default function HeroPanel() {
     return (
@@ -46,8 +30,7 @@ export default function HeroPanel() {
                         Sistema de Acompanhamento de Habilitações — gestão e monitoramento das habilitações oncológicas e novos serviços no SUS.
                     </HeroSub>
                 </Top>
-
-                <Bottom>
+                {/* <Bottom>
                     <StatsRow>
                         <StatItem>
                             <StatNumber>
@@ -69,7 +52,7 @@ export default function HeroPanel() {
                             <StatLabel>Campos monitorados</StatLabel>
                         </StatItem>
                     </StatsRow>
-                </Bottom>
+                </Bottom> */}
             </Content>
         </Container>
     );

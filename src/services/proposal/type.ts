@@ -59,7 +59,7 @@ export type HabilitacaoExitingResponse = {
     saips: string;
     nup: string;
     tipo_financiamento: string;
-
+    newCasesCIB: string;
     tecnico: {
         id: number;
         name: string;

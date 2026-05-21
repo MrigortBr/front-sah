@@ -27,10 +27,21 @@ class ProposalService {
         }
     }
 
+    async getLengthProposal() {
+        try {
+            const response = await api.get<Response<number>>("/proposal/count");
+
+            response.data.status = true;
+
+            return response.data;
+        } catch (err: Response<undefined> | unknown) {
+            return this.goCatch<number>(err);
+        }
+    }
+
     async getProposalDataForForm(id: number) {
         try {
             const response = await api.get<Response<HabilitacaoExitingResponse>>(`/proposal/list/${id}`);
-
             response.data.status = true;
 
             return response.data;

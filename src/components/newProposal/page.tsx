@@ -55,13 +55,10 @@ export default function NewProposal() {
             const response = await proposalService.getProposalData();
 
             if (!response.status) {
-                callMessage(response.message, "error");
+                if (response.statusCode == 503) callMessage(response.message, "warning");
+                else callMessage(response.message, "error");
                 setTimeout(() => {
-                    try {
-                        router.push(PagesPermissions[pathname].go);
-                    } catch (e) {
-                        router.push("/");
-                    }
+                    router.push(PagesPermissions[pathname].go);
                 }, 1000);
             }
 
@@ -75,11 +72,7 @@ export default function NewProposal() {
             if (!response.status) {
                 callMessage(response.message, "error");
                 setTimeout(() => {
-                    try {
-                        router.push(PagesPermissions[pathname].go);
-                    } catch (e) {
-                        router.push("/");
-                    }
+                    router.push(PagesPermissions[pathname].go);
                 }, 1000);
             }
             setDataForm(response.data);
@@ -121,6 +114,8 @@ export default function NewProposal() {
             nup: processData.nup,
 
             situacao: processData.situation,
+
+            newCasesCIB: establishmentData.newCasesCIB,
 
             tipo_financiamento: processData.financingType,
 

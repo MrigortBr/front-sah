@@ -2,12 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-import { authService, LoginResponse } from "@/services/auth.service";
+import { authService, jwt, LoginResponse } from "@/services/auth.service";
 import { AuthContextData, User } from "./type";
 import { iCanAcess } from "@/services/iCanAcess";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { PagesPermissions } from "@/data/pages";
+import { Response } from "@/services/proposal/type";
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
@@ -28,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const [isPagePermitted, setIsPagePermitted] = useState<boolean>(false);
 
-    const login = useCallback(async (email: string, password: string): Promise<LoginResponse> => {
+    const login = useCallback(async (email: string, password: string) => {
         const response = await authService.login({
             email,
             password,

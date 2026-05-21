@@ -6,6 +6,27 @@ export interface CnesData {
     gestao: string;
     status: string;
     municipio: Municipio;
+    casosMacro: Estimativa;
+    quantidadeRegioesSaude: string;
+    quantidadeMunicipios: string;
+    populacaoTotalIBGE2022: string;
+    estimativa: Estimativa[];
+    onco: ProductionData;
+}
+
+export interface Estimativa {
+    codigo_macro: string;
+    uf: string;
+    estimativa_casos: number;
+}
+
+export interface ProductionData {
+    cirQtd: string;
+    cirVal: string;
+    quiQtd: string;
+    quiVal: string;
+    radQtd: string;
+    radVal: string;
 }
 
 export interface Municipio {

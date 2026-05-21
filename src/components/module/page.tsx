@@ -19,12 +19,34 @@ import {
 import Loading from "../spinner/page";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
+import { proposalService } from "@/services/proposal/Proposal";
+import { useAlert } from "@/providers/alert/page";
 
 export default function Page() {
-    const { user, isLoading } = useAuth();
+    const { user, isLoading, logout } = useAuth();
     const router = useRouter();
+    const { callMessage } = useAlert();
+    const [count, setCount] = useState(0);
+    const [loading, setLoading] = useState(true);
 
-    if (isLoading) {
+    useEffect(() => {
+        const data = async () => {
+            const response = await proposalService.getLengthProposal();
+
+            if (!response.status) {
+                callMessage(response.message ?? "Sistema SAH está temporariamente fora do ar!", "error");
+                setInterval(async () => {
+                    await logout();
+                }, 1800);
+            }
+            setCount(response.data);
+            setLoading(false);
+        };
+
+        data();
+    }, []);
+
+    if (isLoading || loading) {
         return (
             <LoadingContainer>
                 <Loading></Loading>
@@ -48,7 +70,7 @@ export default function Page() {
 
                         <CardDescription>Acompanhe as propostas de habilitação em tramitação e cadastre novos pedidos.</CardDescription>
 
-                        <CardFooter>28 propostas em andamento →</CardFooter>
+                        <CardFooter>{count} propostas em andamento →</CardFooter>
                     </Card>
                 </ModuleCard>
             </CardsContainer>

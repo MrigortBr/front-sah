@@ -9,6 +9,10 @@ interface LoginPayload {
     password: string;
 }
 
+export interface jwt {
+    jwt: string;
+}
+
 export interface LoginResponse {
     data: { jwt: string };
     statusCode: number;
@@ -17,9 +21,9 @@ export interface LoginResponse {
 }
 
 class AuthService {
-    async login({ email, password }: LoginPayload): Promise<LoginResponse> {
+    async login({ email, password }: LoginPayload): Promise<Response<jwt>> {
         try {
-            const response = await api.post<LoginResponse>("/login", {
+            const response = await api.post<Response<jwt>>("/login", {
                 email,
                 password,
             });
@@ -32,9 +36,7 @@ class AuthService {
 
             return response.data;
         } catch (err: any) {
-            err.response.data.status = false;
-
-            return err.response.data;
+            return this.goCatch<jwt>(err);
         }
     }
 
@@ -89,19 +91,20 @@ class AuthService {
         }
     }
 
-    private goCatch(err: unknown) {
-        if (axios.isAxiosError<Response<LoginResponse[]>>(err)) {
+    private goCatch<T>(err: unknown): Response<T> {
+        if (axios.isAxiosError<Response<T>>(err)) {
             return {
                 ...err.response?.data,
                 status: false,
-            } as Response<LoginResponse[]>;
+            } as Response<T>;
         }
 
         return {
+            statusCode: 404,
             status: false,
-            data: {},
+            data: {} as T,
             message: "Erro desconhecido",
-        } as Response<LoginResponse[]>;
+        };
     }
 }
 

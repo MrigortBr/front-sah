@@ -112,8 +112,6 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
 
         const formatted = mapProcessIdentificationData(response);
 
-        console.log(formatted.technician);
-
         setSaips(formatted.saips);
         setNup(formatted.nup);
         setSituation(formatted.situation);

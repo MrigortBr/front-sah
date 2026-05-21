@@ -12,9 +12,10 @@ import { useRouter } from "next/navigation";
 import KpiCards from "../kpiCards/page";
 import { TabId, Tabs } from "../tab/page";
 import ExportData from "../exportData/page";
+import { useAlert } from "@/providers/alert/page";
 
 export default function ProposalComponent() {
-    const { onlyReading, isLoading } = useAuth();
+    const { onlyReading, isLoading, logout } = useAuth();
     const [technicians, setTechnicians] = useState<string[]>([]);
     const [situation, setSituation] = useState<string[]>([]);
     const [proposals, setProposals] = useState<SimpleProposal[]>([]);
@@ -22,6 +23,7 @@ export default function ProposalComponent() {
     const [tabValue, setTabValue] = useState<TabId>("lista-propostas");
     const [loadingData, setLoadingData] = useState(true);
     const router = useRouter();
+    const { callMessage } = useAlert();
 
     useEffect(() => {
         if (isLoading) return;
@@ -32,6 +34,12 @@ export default function ProposalComponent() {
 
                 const response = await proposalService.getSimpleProposal();
 
+                if (!response.status) {
+                    callMessage(response.message ?? "Sistema SAH está temporariamente fora do ar!", "error");
+                    setInterval(async () => {
+                        await logout();
+                    }, 1800);
+                }
                 const data = response.data;
 
                 setTechnicians([...new Set(data.filter((v) => v.tecnico).map((v) => v.tecnico))]);
@@ -40,10 +48,10 @@ export default function ProposalComponent() {
 
                 setProposals(data);
                 setBaseProposals(data);
+                if (response.statusCode != 503) setLoadingData(false);
             } catch (error) {
                 console.error(error);
             } finally {
-                setLoadingData(false);
             }
         };
 

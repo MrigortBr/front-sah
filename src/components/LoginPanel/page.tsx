@@ -25,28 +25,32 @@ import {
 import { MouseEvent, useState } from "react";
 import { useAlert } from "@/providers/alert/page";
 import { validateLogin } from "@/utils/validateEmail";
+import Loading from "../spinner/page";
 
 export default function LoginPanel() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { login } = useAuth();
     const { callMessage } = useAlert();
+    const [isLoading, setIsloading] = useState(false);
 
     async function handleLogin(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
+        setIsloading(true);
 
         const response = validateLogin({ email, password });
 
         if (!response.valid) {
             if (response.errors.email) callMessage(response.errors.email, "warning");
             else if (response.errors.password) callMessage(response.errors.password, "warning");
-
+            setIsloading(false);
             return null;
         }
 
         const responseLogin = await login(email, password);
 
-        if (!responseLogin.status) callMessage(responseLogin.message, "error");
+        if (!responseLogin.status) callMessage(responseLogin.message ?? "Sistema SAH está temporariamente fora do ar!", "error");
+        setIsloading(false);
     }
 
     return (
@@ -77,8 +81,8 @@ export default function LoginPanel() {
 
                     <ForgotPassword href="#">Esqueceu a senha?</ForgotPassword>
 
-                    <LoginButton type="submit" onClick={handleLogin}>
-                        Entrar no sistema
+                    <LoginButton disabled={isLoading} type="submit" onClick={handleLogin}>
+                        {isLoading ? <Loading text=""></Loading> : "Entrar no sistema"}
                     </LoginButton>
                 </Form>
 
