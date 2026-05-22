@@ -165,6 +165,20 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
         return undefined;
     }
 
+    function formatMoney(value: string) {
+        const numbers = value.replace(/\D/g, "");
+
+        const numeric = Number(numbers) / 100;
+
+        return (
+            "R$ " +
+            numeric.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            })
+        );
+    }
+
     useImperativeHandle(ref, () => ({
         getData,
     }));
@@ -309,7 +323,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                         style={{
                             cursor: "no-drop",
                         }}
-                        value={cirVal}
+                        value={formatMoney(cirVal)}
                     />
                 </InputComponent>
 
@@ -333,7 +347,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                         style={{
                             cursor: "no-drop",
                         }}
-                        value={quiVal}
+                        value={formatMoney(quiVal)}
                     />
                 </InputComponent>
 
@@ -357,7 +371,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                         style={{
                             cursor: "no-drop",
                         }}
-                        value={radVal}
+                        value={formatMoney(radVal)}
                     />
                 </InputComponent>
             </LocationInfo>
