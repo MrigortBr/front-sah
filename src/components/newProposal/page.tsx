@@ -60,6 +60,8 @@ export default function NewProposal() {
                 setTimeout(() => {
                     router.push(PagesPermissions[pathname].go);
                 }, 1000);
+
+                return;
             }
 
             setData(response.data);

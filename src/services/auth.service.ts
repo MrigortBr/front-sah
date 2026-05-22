@@ -42,8 +42,15 @@ class AuthService {
 
     async logout(): Promise<LoginResponse> {
         try {
+            if (this.getToken() == null)
+                return {
+                    data: { jwt: "" },
+                    message: "Você precisa estar logado para sair.",
+                    status: false,
+                    statusCode: 404,
+                };
             const response = await api.delete<LoginResponse>("/loggout");
-            localStorage.removeItem("sah_token");
+            localStorage.clear();
 
             if (typeof window !== "undefined") {
                 window.location.href = "/";
@@ -53,6 +60,7 @@ class AuthService {
             return response.data;
         } catch (err: any) {
             err.response.data.status = false;
+            localStorage.clear();
 
             return err.response.data;
         }

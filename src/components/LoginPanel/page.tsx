@@ -79,7 +79,7 @@ export default function LoginPanel() {
                         <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" />
                     </Field>
 
-                    <ForgotPassword href="#">Esqueceu a senha?</ForgotPassword>
+                    {/* <ForgotPassword href="#">Esqueceu a senha?</ForgotPassword> */}
 
                     <LoginButton disabled={isLoading} type="submit" onClick={handleLogin}>
                         {isLoading ? <Loading text=""></Loading> : "Entrar no sistema"}
@@ -89,11 +89,11 @@ export default function LoginPanel() {
                 <Footer>
                     <Version>SAH v1.0 · 2026</Version>
 
-                    <Links>
+                    {/* <Links>
                         <a href="#">Suporte</a>
                         <a href="#">Manual</a>
                         <a href="#">Privacidade</a>
-                    </Links>
+                    </Links> */}
                 </Footer>
             </Content>
         </Container>

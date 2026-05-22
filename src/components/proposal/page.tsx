@@ -39,6 +39,7 @@ export default function ProposalComponent() {
                     setInterval(async () => {
                         await logout();
                     }, 1800);
+                    return;
                 }
                 const data = response.data;
 
