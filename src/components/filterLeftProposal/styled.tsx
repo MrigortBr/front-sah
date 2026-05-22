@@ -17,6 +17,10 @@ export const Container = styled.aside`
 
     -webkit-box-shadow: 5px 0px 22px 5px ${({ theme }) => theme.colors.grayLight};
     box-shadow: 5px 0px 22px 5px ${({ theme }) => theme.colors.grayLight};
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 `;
 
 export const Section = styled.div`

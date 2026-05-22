@@ -96,11 +96,11 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
     useEffect(() => {
         const valid =
             saips.trim() !== "" &&
-            nup.trim() !== "" &&
+            // nup.trim() !== "" &&
             situation.trim() !== "" &&
             financingType.trim() !== "" &&
             technician.trim() !== "" &&
-            ordinance.trim() !== "" &&
+            // ordinance.trim() !== "" &&
             dateSaips.trim() !== "" &&
             dateDecan.trim() !== "";
 
@@ -162,9 +162,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
                 <Input value={saips} onChange={(e) => setSaips(e.target.value)} />
             </InputComponent>
             <InputComponent>
-                <InputText>
-                    NUP <a>*</a>
-                </InputText>
+                <InputText>NUP</InputText>
                 <Input value={nup} onChange={(e) => setNup(e.target.value)} />
             </InputComponent>
             <InputComponent>
@@ -205,9 +203,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
                 </InputSelect>
             </InputComponent>
             <InputComponent>
-                <InputText>
-                    Nº Portaria de Habilitação <a>*</a>
-                </InputText>
+                <InputText>Nº Portaria de Habilitação</InputText>
                 <Input value={ordinance} onChange={(e) => setOrdinance(e.target.value)} />
             </InputComponent>
             <DiligenceContainer>

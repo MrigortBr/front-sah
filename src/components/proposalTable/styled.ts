@@ -14,6 +14,11 @@ export const Container = styled.div`
 
     margin-top: 5vh;
     margin-bottom: 5vh;
+
+    @media (max-width: 768px) {
+        width: 95dvw;
+        margin-left: 2dvw;
+    }
 `;
 
 export const Header = styled.div`

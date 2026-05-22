@@ -30,7 +30,7 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
 
     const [parcelaUnica, setParcelaUnica] = useState("");
 
-    const [isValid, setIsValid] = useState(false);
+    const [isValid, setIsValid] = useState(true);
 
     const { callMessage } = useAlert();
 
@@ -67,15 +67,15 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
     }
 
     useEffect(() => {
-        const valid =
-            impactMensal.trim() !== "" &&
-            impactMensal.trim() !== "0,00" &&
-            impactAnual.trim() !== "" &&
-            impactAnual.trim() !== "0,00" &&
-            parcelaUnica.trim() !== "" &&
-            parcelaUnica.trim() !== "0,00";
+        // const valid =
+        //     impactMensal.trim() !== "" &&
+        //     impactMensal.trim() !== "0,00" &&
+        //     impactAnual.trim() !== "" &&
+        //     impactAnual.trim() !== "0,00" &&
+        //     parcelaUnica.trim() !== "" &&
+        //     parcelaUnica.trim() !== "0,00";
 
-        setIsValid(valid);
+        setIsValid(true);
     }, [impactMensal, impactAnual, parcelaUnica]);
 
     function formatMoneyBR(value: string | number) {
@@ -144,10 +144,7 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
 
             <MoneyContainer>
                 <InputComponent>
-                    <InputText>
-                        Impacto Mensal
-                        <a>*</a>
-                    </InputText>
+                    <InputText>Impacto Mensal</InputText>
 
                     <Input value={impactMensal} onChange={(e) => handleMonthlyImpact(e.target.value)} placeholder="0,00" />
 
@@ -155,10 +152,7 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
                 </InputComponent>
 
                 <InputComponent>
-                    <InputText>
-                        Impacto Anual
-                        <a>*</a>
-                    </InputText>
+                    <InputText>Impacto Anual</InputText>
 
                     <Input value={impactAnual} disabled style={{ cursor: "no-drop" }} />
 
@@ -166,10 +160,7 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
                 </InputComponent>
 
                 <InputComponent>
-                    <InputText>
-                        Parcela Única
-                        <a>*</a>
-                    </InputText>
+                    <InputText>Parcela Única</InputText>
 
                     <Input value={parcelaUnica} onChange={(e) => handleUniqueParcel(e.target.value)} placeholder="0,00" />
 

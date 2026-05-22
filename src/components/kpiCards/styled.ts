@@ -16,6 +16,14 @@ export const KpiGrid = styled.div`
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 
     gap: 1vw;
+
+    @media (max-width: 768px) {
+        gap: 5dvw;
+        grid-template-columns: 45dvw 45dvw;
+
+        width: 95dvw;
+        margin-left: 2.5dvw;
+    }
 `;
 
 export const Card = styled.div<{ $border: string }>`
@@ -38,6 +46,11 @@ export const Card = styled.div<{ $border: string }>`
     border-bottom: 0.35vh solid ${({ $border }) => $border};
 
     box-shadow: 0 0.2vh 0.6vh rgba(0, 0, 0, 0.05);
+
+    @media (max-width: 768px) {
+        height: 15dvh;
+        max-height: 5dvh;
+    }
 `;
 
 export const Title = styled.h3`
@@ -50,6 +63,11 @@ export const Title = styled.h3`
     letter-spacing: 0.08vw;
 
     margin-bottom: 1.2vh;
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-weight: ${({ theme }) => theme.fontWeights.bold};
+    }
 `;
 
 export const Number = styled.h1`
@@ -62,6 +80,11 @@ export const Number = styled.h1`
     line-height: 100%;
 
     margin-bottom: 1vh;
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-weight: ${({ theme }) => theme.fontWeights.medium};
+    }
 `;
 
 export const Description = styled.p<{ $color: string }>`
@@ -70,6 +93,11 @@ export const Description = styled.p<{ $color: string }>`
     font-weight: 500;
 
     color: ${({ $color }) => $color};
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        font-weight: ${({ theme }) => theme.fontWeights.medium};
+    }
 `;
 
 export const IconContainer = styled.div<{ $bg: string }>`

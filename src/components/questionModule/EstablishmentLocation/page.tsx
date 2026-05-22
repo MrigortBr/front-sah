@@ -135,7 +135,8 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
     }, [cnes]);
 
     useEffect(() => {
-        const valid = cnes.length === 7 && accelerators.trim() !== "" && uf.trim() !== "" && newCasesCIB > 0;
+        const valid = cnes.length === 7 && accelerators.trim() !== "" && uf.trim() !== "";
+        // && newCasesCIB > 0;
 
         setIsValid(valid);
     }, [cnes, accelerators, establishmentName, cnpj, uf]);
@@ -402,9 +403,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                     />
                 </InputComponent>
                 <InputComponent>
-                    <InputText>
-                        Novos Casos de Câncer pactuados em CIB <a>*</a>
-                    </InputText>
+                    <InputText>Novos Casos de Câncer pactuados em CIB</InputText>
                     <Input value={newCasesCIB} onChange={(e) => setNewCasesCIB(Number(e.target.value))} />
                 </InputComponent>
             </LocationInfo>

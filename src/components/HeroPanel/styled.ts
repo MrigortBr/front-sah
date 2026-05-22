@@ -36,6 +36,10 @@ export const Container = styled.section`
         border-radius: 50%;
         pointer-events: none;
     }
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 `;
 
 export const Content = styled.div`

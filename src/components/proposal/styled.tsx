@@ -38,6 +38,28 @@ export const TitleContainer = styled.div`
         grid-row-start: 1;
         grid-row-end: 3;
     }
+
+    @media (max-width: 768px) {
+        margin-top: 5dvh;
+        padding: 3dvw;
+        display: grid;
+        grid-template-columns: 50dvw 40dvw;
+        & > h1 {
+            width: 50dvw;
+        }
+
+        & > h2 {
+            width: 50dvw;
+        }
+
+        & > button {
+            width: 30dvw;
+            grid-column-start: 2;
+            grid-column-end: 3;
+            grid-row-start: 1;
+            grid-row-end: 3;
+        }
+    }
 `;
 
 export const AddNewRequest = styled.button`

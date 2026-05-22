@@ -12,6 +12,12 @@ export const Card = styled.div`
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     column-gap: 5%;
+
+    @media (max-width: 768px) {
+        width: 95dvw;
+        margin-left: 1dvw;
+        margin-bottom: 5dvh;
+    }
 `;
 
 export const CardText = styled.h2`

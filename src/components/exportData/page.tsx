@@ -211,7 +211,7 @@ export default function ExportData({ data }: PROPS) {
                 </CardHeader>
             </Card>
             <CardOrange>
-                <CardTitle $color={"orange"}>Modelo de nota — proposta em diligência</CardTitle>
+                <CardTitle $color={""}>Modelo de nota — proposta em diligência</CardTitle>
                 <CardDescription>
                     Em consulta ao Sistema de Apoio à Implementação de Políticas em Saúde (SAIPS), foi identificada a proposta nº 218623, referente à
                     solicitação de habilitação na alta complexidade em oncologia como UNACON c/ Serviço de Radioterapia (códigos 17.06 e 17.07), do

@@ -18,6 +18,10 @@ export const Container = styled.div`
     font-family: ${({ theme }) => theme.fonts.sans};
 
     padding: 4vh 4vw;
+
+    @media (max-width: 768px) {
+        height: 72dvh;
+    }
 `;
 
 export const GreetingContainer = styled.div`
@@ -27,6 +31,10 @@ export const GreetingContainer = styled.div`
 
     gap: 1vh;
     margin-bottom: 5vh;
+
+    @media (max-width: 768px) {
+        width: 100%;
+    }
 `;
 
 export const Greeting = styled.h1`
@@ -38,6 +46,10 @@ export const Greeting = styled.h1`
     font-family: ${({ theme }) => theme.fonts.primary};
 
     text-align: center;
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+    }
 `;
 
 export const GreetingSubtitle = styled.p`
@@ -49,6 +61,10 @@ export const GreetingSubtitle = styled.p`
     font-family: ${({ theme }) => theme.fonts.sans};
 
     text-align: center;
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.lg};
+    }
 `;
 
 export const CardsContainer = styled.div`
@@ -93,6 +109,11 @@ export const ModuleCard = styled.div`
 
         box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.12);
     }
+
+    @media (max-width: 768px) {
+        width: 85dvw;
+        flex-direction: row;
+    }
 `;
 
 export const CardIcon = styled.div`
@@ -110,6 +131,12 @@ export const CardIcon = styled.div`
     background: ${({ theme }) => theme.colors.grayUltraLight};
 
     color: ${({ theme }) => theme.colors.greenBackground};
+
+    @media (max-width: 768px) {
+        height: 5dvh;
+        width: 10dvh;
+        font-size: ${({ theme }) => theme.fontSizes.md};
+    }
 `;
 
 export const Card = styled.div`
@@ -128,6 +155,11 @@ export const CardTitle = styled.h2`
     font-family: ${({ theme }) => theme.fonts.primary};
 
     line-height: 120%;
+
+    @media (max-width: 768px) {
+        width: fit-content;
+        font-size: ${({ theme }) => theme.fontSizes.lg};
+    }
 `;
 
 export const CardDescription = styled.p`
@@ -139,6 +171,10 @@ export const CardDescription = styled.p`
     font-family: ${({ theme }) => theme.fonts.sans};
 
     line-height: 160%;
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+    }
 `;
 
 export const CardFooter = styled.span`
@@ -150,6 +186,10 @@ export const CardFooter = styled.span`
     color: ${({ theme }) => theme.colors.greenBackground};
 
     font-family: ${({ theme }) => theme.fonts.sans};
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+    }
 `;
 
 export const LoadingContainer = styled.div`

@@ -21,6 +21,9 @@ import {
     SectionLabel,
     Title,
     Version,
+    GovBar,
+    GovLogo,
+    GovText,
 } from "./styled";
 import { MouseEvent, useState } from "react";
 import { useAlert } from "@/providers/alert/page";
@@ -56,6 +59,14 @@ export default function LoginPanel() {
     return (
         <Container>
             <Content>
+                <GovBar>
+                    <GovLogo>MS</GovLogo>
+
+                    <GovText>
+                        <strong>Ministério da Saúde</strong>
+                        <span>Departamento de Atenção Especializada</span>
+                    </GovText>
+                </GovBar>
                 <Header>
                     <Eyebrow>Acesso restrito</Eyebrow>
 
@@ -82,7 +93,7 @@ export default function LoginPanel() {
                     {/* <ForgotPassword href="#">Esqueceu a senha?</ForgotPassword> */}
 
                     <LoginButton disabled={isLoading} type="submit" onClick={handleLogin}>
-                        {isLoading ? <Loading text=""></Loading> : "Entrar no sistema"}
+                        {isLoading ? <Loading text="" heightSpinner="24px" widthSpinner="24px"></Loading> : "Entrar no sistema"}
                     </LoginButton>
                 </Form>
 

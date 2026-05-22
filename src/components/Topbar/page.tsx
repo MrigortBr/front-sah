@@ -15,12 +15,14 @@ import {
 } from "./styled";
 import { useAuth } from "@/context/auth/auth.context";
 import { useAlert } from "@/providers/alert/page";
+import { LoadingContainer } from "../module/styled";
+import Loading from "../spinner/page";
 
 export default function Topbar() {
     const { user, isLoading, logout } = useAuth();
     const { callMessage } = useAlert();
 
-    if (isLoading) return null;
+    if (isLoading) return <LoadingContainer>{/* <Loading></Loading> */}</LoadingContainer>;
 
     const name = user?.name ?? "Desconhecido";
     const surname = user?.surname ?? "Desconhecido";

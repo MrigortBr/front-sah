@@ -23,6 +23,28 @@ export const Container = styled.section`
         height: 100%;
         background: linear-gradient(180deg, ${({ theme }) => theme.colors.yellowVibrant}, ${({ theme }) => theme.colors.greenBackground});
     }
+
+    @media (max-width: 768px) {
+        height: 90dvh;
+        max-height: 87dvh;
+        position: relative;
+
+        &::before {
+            height: 100dvh;
+            z-index: 40;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 0.3rem;
+            height: 100dvh;
+            z-index: 40;
+            background: linear-gradient(180deg, ${({ theme }) => theme.colors.yellowVibrant}, ${({ theme }) => theme.colors.greenBackground});
+        }
+    }
 `;
 
 export const Content = styled.div`
@@ -249,5 +271,54 @@ export const Links = styled.div`
         &:hover {
             color: #1b5e3b;
         }
+    }
+`;
+
+export const GovBar = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 4rem;
+    display: none;
+
+    @media (max-width: 768px) {
+        display: flex;
+        margin-left: 0;
+        background-color: ${({ theme }) => theme.colors.greenUltraLight};
+        padding: 10px;
+        border-radius: 20px;
+    }
+`;
+
+export const GovLogo = styled.div`
+    width: 2.8rem;
+    height: 2.8rem;
+
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+
+    background: ${({ theme }) => theme.colors.yellowVibrant};
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: ${({ theme }) => theme.colors.greenBackground};
+
+    font-size: 1.1rem;
+    font-weight: 700;
+`;
+
+export const GovText = styled.div`
+    display: flex;
+    flex-direction: column;
+
+    strong {
+        color: ${({ theme }) => theme.colors.text.strong};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
+
+    span {
+        color: ${({ theme }) => theme.colors.text.normal};
+        font-size: ${({ theme }) => theme.fontSizes.xs};
     }
 `;

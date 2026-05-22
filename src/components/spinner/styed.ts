@@ -29,11 +29,11 @@ export const LoadingContainer = styled.div<LoadingContainerProps>`
     gap: 2vh;
 `;
 
-export const LoadingSpinner = styled.div`
-    width: 3vw;
-    height: 3vw;
+export const LoadingSpinner = styled.div<LoadingContainerProps>`
+    width: ${({ $width }) => $width};
+    height: ${({ $height }) => $height};
 
-    border-radius: 50%;
+    border-radius: 100%;
 
     border: 0.35vw solid ${({ theme }) => theme.colors.grayUltraLight};
 

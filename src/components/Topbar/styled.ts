@@ -7,6 +7,10 @@ export const TopbarContainer = styled.nav`
     padding: 12px 20px;
     background: ${({ theme }) => theme.colors.greenBackground};
     height: 9vh;
+
+    @media (max-width: 768px) {
+        height: 10dvh;
+    }
 `;
 
 export const TopbarBrand = styled.div`
@@ -65,6 +69,10 @@ export const UserAvatar = styled.div`
     justify-content: center;
     font-weight: ${({ theme }) => theme.fontWeights.medium};
     font-size: ${({ theme }) => theme.fontSizes.sm};
+
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 export const UserName = styled.div`

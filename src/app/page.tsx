@@ -30,6 +30,11 @@ export const Container = styled.div`
         grid-template-columns: 1fr;
     }
 
+    @media (max-width: 768px) {
+        display: flex;
+        flex-direction: column;
+    }
+
     & > footer {
         grid-column-start: 1;
         grid-column-end: 3;

@@ -13,6 +13,11 @@ export const Container = styled.div`
 export const Header = styled.header`
     height: 9vh;
     min-height: 9vh;
+
+    @media (max-width: 768px) {
+        min-height: 0dvh;
+        max-height: 10dvh;
+    }
 `;
 
 export const Content = styled.main`
@@ -20,9 +25,19 @@ export const Content = styled.main`
     min-height: 81vh;
 
     overflow-y: auto;
+
+    @media (max-width: 768px) {
+        min-height: 0dvh;
+        max-height: 80dvh;
+    }
 `;
 
 export const Footer = styled.footer`
     height: 10vh;
     min-height: 10vh;
+
+    @media (max-width: 768px) {
+        min-height: 0dvh;
+        max-height: 10dvh;
+    }
 `;

@@ -8,6 +8,11 @@ export const TabsWrapper = styled.nav`
     padding: 0 0;
     border-bottom: 1px solid #e0dbd0;
     margin-top: 5vh;
+
+    @media (max-width: 768px) {
+        width: 90dvw;
+        margin-left: 5dvw;
+    }
 `;
 
 export const Tab = styled.button<{ $active?: boolean }>`

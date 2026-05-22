@@ -8,6 +8,10 @@ export const Container = styled.div`
     overflow: hidden;
     display: grid;
     grid-template-columns: 20% 80%;
+
+    @media (max-width: 768px) {
+        display: flex;
+    }
 `;
 
 export const Questions = styled.div`
