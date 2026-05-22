@@ -14,7 +14,7 @@ export default function HeroPanel() {
 
                         <GovText>
                             <strong>Ministério da Saúde</strong>
-                            <span>Departamento de Atenção Especializada</span>
+                            <span>Departamento de Atenção ao Câncer</span>
                         </GovText>
                     </GovBar>
 
