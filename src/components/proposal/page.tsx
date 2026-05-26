@@ -94,9 +94,9 @@ export default function ProposalComponent() {
                             title={"Em análise / Em diligência"}
                             color={2}
                             proposals={proposals}
-                            headerItens={["NUP", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
+                            headerItens={["SAIPS", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
                             columns={[
-                                "numero_unico_protoclo",
+                                "saips",
                                 "nome_estabelecimento",
                                 "uf_estabelecimento",
                                 "tipohabilitacao",
@@ -111,9 +111,9 @@ export default function ProposalComponent() {
                             title="Enviadas ao DRAC"
                             color={0}
                             proposals={proposals}
-                            headerItens={["NUP", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
+                            headerItens={["SAIPS", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
                             columns={[
-                                "numero_unico_protoclo",
+                                "saips",
                                 "nome_estabelecimento",
                                 "uf_estabelecimento",
                                 "tipohabilitacao",
@@ -128,9 +128,9 @@ export default function ProposalComponent() {
                             title="Todas"
                             color={3}
                             proposals={proposals}
-                            headerItens={["NUP", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
+                            headerItens={["SAIPS", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
                             columns={[
-                                "numero_unico_protoclo",
+                                "saips",
                                 "nome_estabelecimento",
                                 "uf_estabelecimento",
                                 "tipohabilitacao",
