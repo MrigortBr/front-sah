@@ -7,11 +7,10 @@ export const Container = styled.div`
     height: 100%;
 
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-
-    gap: 4vh;
 
     background: ${({ theme }) => theme.colors.grayLight};
 
@@ -30,7 +29,6 @@ export const GreetingContainer = styled.div`
     align-items: center;
 
     gap: 1vh;
-    margin-bottom: 5vh;
 
     @media (max-width: 768px) {
         width: 100%;
@@ -38,7 +36,7 @@ export const GreetingContainer = styled.div`
 `;
 
 export const Greeting = styled.h1`
-    font-size: 3vw;
+    font-size: ${({ theme }) => theme.fontSizes.xxl};
     font-weight: ${({ theme }) => theme.fontWeights.bold};
 
     color: ${({ theme }) => theme.colors.greenDark};
@@ -79,7 +77,7 @@ export const CardsContainer = styled.div`
     flex-wrap: wrap;
 `;
 
-export const ModuleCard = styled.div`
+export const ModuleCard = styled.div<{ $color: string }>`
     width: 28vw;
     min-height: 20vh;
 
@@ -87,9 +85,11 @@ export const ModuleCard = styled.div`
 
     border-radius: ${({ theme }) => theme.borderRadius.xs};
 
-    background: ${({ theme }) => theme.colors.grayLight};
+    border: 0.5vh solid transparent;
 
-    border-top: 0.5vh solid ${({ theme }) => theme.colors.greenBackground};
+    border-top: 1vh solid ${({ $color }) => $color};
+
+    background: ${({ theme }) => theme.colors.grayLight};
 
     display: flex;
     flex-direction: column;

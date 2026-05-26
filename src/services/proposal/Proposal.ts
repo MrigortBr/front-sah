@@ -29,13 +29,13 @@ class ProposalService {
 
     async getLengthProposal() {
         try {
-            const response = await api.get<Response<number>>("/proposal/count");
+            const response = await api.get<Response<{ situacao: string }[]>>("/proposal/count");
 
             response.data.status = true;
 
             return response.data;
         } catch (err: Response<undefined> | unknown) {
-            return this.goCatch<number>(err);
+            return this.goCatch<{ situacao: string }[]>(err);
         }
     }
 

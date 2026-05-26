@@ -45,16 +45,16 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
         });
     }
 
-    function handleMonthlyImpact(value: string) {
+    function handleImpactAnual(value: string) {
         const formatted = formatMoney(value);
 
-        setImpactMensal(formatted);
+        setImpactAnual(formatted);
 
         const numeric = Number(formatted.replace(/\./g, "").replace(",", "."));
 
-        const annual = numeric * 12;
+        const annual = numeric / 12;
 
-        setImpactAnual(
+        setImpactMensal(
             annual.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -144,19 +144,17 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
 
             <MoneyContainer>
                 <InputComponent>
-                    <InputText>Impacto Mensal</InputText>
+                    <InputText> disabledImpacto Mensal</InputText>
 
-                    <Input value={impactMensal} onChange={(e) => handleMonthlyImpact(e.target.value)} placeholder="0,00" />
+                    <Input value={impactMensal} disabled placeholder="0,00" />
 
-                    <InputDescription>R$ por mês</InputDescription>
+                    <InputDescription>Dividido por 12</InputDescription>
                 </InputComponent>
 
                 <InputComponent>
                     <InputText>Impacto Anual</InputText>
 
-                    <Input value={impactAnual} disabled style={{ cursor: "no-drop" }} />
-
-                    <InputDescription>Calculado (× 12)</InputDescription>
+                    <Input value={impactAnual} onChange={(e) => handleImpactAnual(e.target.value)} />
                 </InputComponent>
 
                 <InputComponent>

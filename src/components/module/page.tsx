@@ -21,12 +21,15 @@ import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 import { proposalService } from "@/services/proposal/Proposal";
 import { useAlert } from "@/providers/alert/page";
+import { theme } from "@/styles/theme";
 
 export default function Page() {
     const { user, isLoading, logout } = useAuth();
     const router = useRouter();
     const { callMessage } = useAlert();
     const [count, setCount] = useState(0);
+    const [countActive, setCountActive] = useState(0);
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -39,7 +42,8 @@ export default function Page() {
                     await logout();
                 }, 1800);
             }
-            setCount(response.data);
+            setCount(response.data.length);
+            // setCountActive(response.data.filter((v) => v === "Proposta concluída"));
             setLoading(false);
         };
 
@@ -62,8 +66,19 @@ export default function Page() {
                 <GreetingSubtitle>Selecione o módulo que deseja acessar</GreetingSubtitle>
             </GreetingContainer>
 
-            <CardsContainer onClick={() => router.push("/propostas")}>
-                <ModuleCard>
+            <CardsContainer>
+                <ModuleCard $color={theme.colors.blueBackground} onClick={() => router.push("/propostas")}>
+                    <CardIcon>📋</CardIcon>
+                    <Card>
+                        <CardTitle>Habilitações Ativas</CardTitle>
+
+                        <CardDescription>Consulte e gerencie os estabelecimentos com habilitação oncológica vigente no SUS.</CardDescription>
+
+                        <CardFooter>{count} propostas em andamento →</CardFooter>
+                    </Card>
+                </ModuleCard>
+{/* 
+                <ModuleCard $color={theme.colors.greenBackground} onClick={() => router.push("/propostas")}>
                     <CardIcon>📋</CardIcon>
                     <Card>
                         <CardTitle>Propostas SAIPS</CardTitle>
@@ -72,7 +87,7 @@ export default function Page() {
 
                         <CardFooter>{count} propostas em andamento →</CardFooter>
                     </Card>
-                </ModuleCard>
+                </ModuleCard> */}
             </CardsContainer>
         </Container>
     );
