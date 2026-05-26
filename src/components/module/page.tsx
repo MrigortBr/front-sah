@@ -77,8 +77,8 @@ export default function Page() {
                         <CardFooter>{count} propostas em andamento →</CardFooter>
                     </Card>
                 </ModuleCard>
-                {/* 
-                <ModuleCard $color={theme.colors.greenBackground} onClick={() => router.push("/propostas")}>
+
+                {/* <ModuleCard $color={theme.colors.greenBackground} onClick={() => callMessage("E")}>
                     <CardIcon>📋</CardIcon>
                     <Card>
                         <CardTitle>Propostas SAIPS</CardTitle>

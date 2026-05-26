@@ -154,7 +154,7 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
                 <InputComponent>
                     <InputText>Impacto Anual</InputText>
 
-                    <Input value={impactAnual} onChange={(e) => handleImpactAnual(e.target.value)} />
+                    <Input value={impactAnual} onChange={(e) => handleImpactAnual(e.target.value)} placeholder="0,00" />
                 </InputComponent>
 
                 <InputComponent>
