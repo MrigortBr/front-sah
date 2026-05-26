@@ -135,7 +135,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
     }, [cnes]);
 
     useEffect(() => {
-        const valid = cnes.length === 7 && accelerators.trim() !== "" && uf.trim() !== "";
+        const valid = cnes.length === 7;
         // && newCasesCIB > 0;
 
         setIsValid(valid);
