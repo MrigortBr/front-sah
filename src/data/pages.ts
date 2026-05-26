@@ -17,10 +17,14 @@ export const PagesPermissions: Record<string, PagePermission> = {
     },
     "/propostas": {
         perm: [1, 2, 3],
-        go: "/",
+        go: "/modulos",
     },
     "/propostas/nova": {
         perm: [1, 2],
         go: "/propostas",
+    },
+    "/ativos": {
+        perm: [1, 2, 3],
+        go: "/modulos",
     },
 };

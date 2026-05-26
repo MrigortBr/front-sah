@@ -1,4 +1,4 @@
-// LoginPage.jsx
+"use client";
 
 import Footer from "@/components/footer/page";
 import HeroPanel from "@/components/HeroPanel/page";

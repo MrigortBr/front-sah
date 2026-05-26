@@ -85,7 +85,7 @@ export const ModuleCard = styled.div<{ $color: string }>`
 
     border-radius: ${({ theme }) => theme.borderRadius.xs};
 
-    border: 0.5vh solid transparent;
+    border: 0.25vh solid transparent;
 
     border-top: 1vh solid ${({ $color }) => $color};
 
@@ -106,8 +106,9 @@ export const ModuleCard = styled.div<{ $color: string }>`
 
     &:hover {
         transform: translateY(-0.5vh);
-
-        box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.12);
+        border: 0.25vh solid ${({ $color }) => $color};
+        border-top: 1vh solid ${({ $color }) => $color};
+        box-shadow: 0 1vh 2vh ${({ $color }) => $color};
     }
 
     @media (max-width: 768px) {

@@ -8,6 +8,7 @@ export interface SimpleProposal {
     tecnico: string;
     situacao: string;
     inicio_saips: string;
+    numero_unico_protoclo: string;
     tipohabilitacao: {
         id: number;
         codigo: string;

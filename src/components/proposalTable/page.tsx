@@ -21,7 +21,14 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 
-type ColumnKey = "nome_estabelecimento" | "uf_estabelecimento" | "tipohabilitacao" | "situacao" | "tecnico" | "inicio_saips";
+type ColumnKey =
+    | "nome_estabelecimento"
+    | "numero_unico_protoclo"
+    | "uf_estabelecimento"
+    | "tipohabilitacao"
+    | "situacao"
+    | "tecnico"
+    | "inicio_saips";
 
 type PROP = {
     proposals: SimpleProposal[];
@@ -112,6 +119,9 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
 
             case "tecnico":
                 return proposal.tecnico;
+
+            case "numero_unico_protoclo":
+                return proposal.numero_unico_protoclo;
 
             case "inicio_saips":
                 return new Date(proposal.inicio_saips).toLocaleDateString("pt-BR");

@@ -43,7 +43,7 @@ export default function Page() {
                 }, 1800);
             }
             setCount(response.data.length);
-            // setCountActive(response.data.filter((v) => v === "Proposta concluída"));
+            setCountActive(response.data.filter((v) => v.situacao === "Proposta concluída").length);
             setLoading(false);
         };
 
@@ -67,18 +67,18 @@ export default function Page() {
             </GreetingContainer>
 
             <CardsContainer>
-                <ModuleCard $color={theme.colors.blueBackground} onClick={() => router.push("/propostas")}>
-                    <CardIcon>📋</CardIcon>
+                <ModuleCard $color={theme.colors.blueBackground} onClick={() => callMessage("Em produção")}>
+                    <CardIcon>🏥</CardIcon>
                     <Card>
                         <CardTitle>Habilitações Ativas</CardTitle>
 
                         <CardDescription>Consulte e gerencie os estabelecimentos com habilitação oncológica vigente no SUS.</CardDescription>
 
-                        <CardFooter>{count} propostas em andamento →</CardFooter>
+                        <CardFooter>{countActive} propostas em andamento →</CardFooter>
                     </Card>
                 </ModuleCard>
 
-                {/* <ModuleCard $color={theme.colors.greenBackground} onClick={() => callMessage("E")}>
+                <ModuleCard $color={theme.colors.greenBackground} onClick={() => router.push("/propostas")}>
                     <CardIcon>📋</CardIcon>
                     <Card>
                         <CardTitle>Propostas SAIPS</CardTitle>
@@ -87,7 +87,7 @@ export default function Page() {
 
                         <CardFooter>{count} propostas em andamento →</CardFooter>
                     </Card>
-                </ModuleCard> */}
+                </ModuleCard>
             </CardsContainer>
         </Container>
     );
