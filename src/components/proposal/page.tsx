@@ -13,6 +13,7 @@ import KpiCards from "../kpiCards/page";
 import { TabId, Tabs } from "../tab/page";
 import ExportData from "../exportData/page";
 import { useAlert } from "@/providers/alert/page";
+import ErrorPage from "../error/page";
 
 export default function ProposalComponent() {
     const { onlyReading, isLoading, logout } = useAuth();
@@ -22,6 +23,7 @@ export default function ProposalComponent() {
     const [baseProposals, setBaseProposals] = useState<SimpleProposal[]>([]);
     const [tabValue, setTabValue] = useState<TabId>("lista-propostas");
     const [loadingData, setLoadingData] = useState(true);
+    const [error, setError] = useState({ message: "", function: () => {} });
     const router = useRouter();
     const { callMessage } = useAlert();
 
@@ -33,12 +35,9 @@ export default function ProposalComponent() {
                 setLoadingData(true);
 
                 const response = await proposalService.getSimpleProposal();
-
                 if (!response.status) {
                     callMessage(response.message ?? "Sistema SAH está temporariamente fora do ar!", "error");
-                    setInterval(async () => {
-                        await logout();
-                    }, 1800);
+                    setError({ message: response.message, function: () => {} });
                     return;
                 }
                 const data = response.data;
@@ -49,6 +48,7 @@ export default function ProposalComponent() {
 
                 setProposals(data);
                 setBaseProposals(data);
+                setLoadingData(false);
                 if (response.statusCode != 503) setLoadingData(false);
             } catch (error) {
                 console.error(error);
@@ -58,6 +58,14 @@ export default function ProposalComponent() {
 
         loadData();
     }, [isLoading]);
+
+    if (error.message != "") {
+        return (
+            <LoadingContainer>
+                <ErrorPage text={error.message}></ErrorPage>
+            </LoadingContainer>
+        );
+    }
 
     if (isLoading || loadingData) {
         return (

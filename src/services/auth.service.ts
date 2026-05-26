@@ -42,13 +42,17 @@ class AuthService {
 
     async logout(): Promise<LoginResponse> {
         try {
-            if (this.getToken() == null)
+            if (this.getToken() == null) {
+                localStorage.clear();
+                window.location.href = "/";
                 return {
                     data: { jwt: "" },
-                    message: "Você precisa estar logado para sair.",
+                    message: "Seu login expirou!",
                     status: false,
                     statusCode: 404,
                 };
+            }
+
             const response = await api.delete<LoginResponse>("/loggout");
             localStorage.clear();
 
