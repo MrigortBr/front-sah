@@ -14,7 +14,7 @@ export const statusMock = [
     "Proposta concluída",
 ];
 
-export const typeFin = ["CHARR", "MAC", "FAEC", "MAC E FAEC", "Não há ônus para o MS"];
+export const typeFin = ["MAC", "FAEC", "MAC E FAEC", "Não há ônus para o MS"];
 
 export const Diligencias: string[] = [
     "Deliberação CIB",

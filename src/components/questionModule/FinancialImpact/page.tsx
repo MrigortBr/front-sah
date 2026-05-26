@@ -144,7 +144,7 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
 
             <MoneyContainer>
                 <InputComponent>
-                    <InputText> disabledImpacto Mensal</InputText>
+                    <InputText> Impacto Mensal</InputText>
 
                     <Input value={impactMensal} disabled placeholder="0,00" />
 
