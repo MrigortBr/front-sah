@@ -1,23 +1,23 @@
 "use client";
 import { proposalService } from "@/services/proposal/Proposal";
 import { useEffect, useState } from "react";
-import Sidebar from "../filterLeftProposal/page";
 import { AddNewRequest, Container, ContainerProposal, TitleContainer } from "../proposal/styled";
 import { SimpleProposal } from "@/services/proposal/type";
-import ProposalTable from "../proposalTable/page";
 import { useAuth } from "@/context/auth/auth.context";
 import { LoadingContainer } from "../module/styled";
 import Loading from "../spinner/page";
 import { useRouter } from "next/navigation";
 import KpiCards from "../kpiActive/page";
-import { TabId, Tabs } from "../tab/page";
+import { TabId } from "../tab/page";
 import ExportData from "../exportData/page";
 import { useAlert } from "@/providers/alert/page";
+import ProposalTable from "../proposalTable/page";
+import SidebarActive from "../filterLeftActive/page";
 
 export default function ActivesComponent() {
     const { onlyReading, isLoading, logout } = useAuth();
-    const [technicians, setTechnicians] = useState<string[]>([]);
-    const [situation, setSituation] = useState<string[]>([]);
+    const [uf, setUf] = useState<string[]>([]);
+    const [habilitacao, setHabilitacao] = useState<string[]>([]);
     const [proposals, setProposals] = useState<SimpleProposal[]>([]);
     const [baseProposals, setBaseProposals] = useState<SimpleProposal[]>([]);
     const [tabValue, setTabValue] = useState<TabId>("lista-propostas");
@@ -32,7 +32,7 @@ export default function ActivesComponent() {
             try {
                 setLoadingData(true);
 
-                const response = await proposalService.getSimpleProposal();
+                const response = await proposalService.getSimpleProposalFilter("Proposta concluída");
 
                 if (!response.status) {
                     callMessage(response.message ?? "Sistema SAH está temporariamente fora do ar!", "error");
@@ -43,9 +43,17 @@ export default function ActivesComponent() {
                 }
                 const data = response.data;
 
-                setTechnicians([...new Set(data.filter((v) => v.tecnico).map((v) => v.tecnico))]);
+                setUf([...new Set(data.filter((v) => v.uf_estabelecimento).map((v) => v.uf_estabelecimento))]);
 
-                setSituation([...new Set(data.filter((v) => v.situacao).map((v) => v.situacao))]);
+                const habs: string[] = [];
+
+                data.map((v) =>
+                    v.tipohabilitacao.map((t) => {
+                        habs.push(`${t.descricao}`);
+                    })
+                );
+
+                setHabilitacao([...new Set(habs)]);
 
                 setProposals(data);
                 setBaseProposals(data);
@@ -69,7 +77,7 @@ export default function ActivesComponent() {
 
     return (
         <Container>
-            <Sidebar technicians={technicians} situation={situation} set={setProposals} base={baseProposals}></Sidebar>
+            <SidebarActive uf={uf} hab={habilitacao} set={setProposals} base={baseProposals}></SidebarActive>
 
             <ContainerProposal>
                 <TitleContainer>
@@ -78,7 +86,7 @@ export default function ActivesComponent() {
                         <span></span>
                     ) : (
                         <>
-                            <AddNewRequest onClick={() => router.push("/propostas/nova")}>+ Cadastrar nova proposta</AddNewRequest>
+                            <AddNewRequest onClick={() => router.push("/ativos/nova")}>+ Cadastrar nova proposta</AddNewRequest>
                         </>
                     )}
                     <h2>{proposals.length} propostas em ativas</h2>

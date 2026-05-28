@@ -67,7 +67,7 @@ export default function Page() {
             </GreetingContainer>
 
             <CardsContainer>
-                <ModuleCard $color={theme.colors.blueBackground} onClick={() => callMessage("Em produção")}>
+                <ModuleCard $color={theme.colors.blueBackground} onClick={() => router.push("/ativos")}>
                     <CardIcon>🏥</CardIcon>
                     <Card>
                         <CardTitle>Habilitações Ativas</CardTitle>

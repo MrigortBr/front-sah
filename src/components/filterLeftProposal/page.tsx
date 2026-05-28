@@ -1,5 +1,3 @@
-// page.tsx
-
 import { Dispatch, SetStateAction, useState } from "react";
 
 import { Badge, CollapseButton, Container, Icon, Label, Left, Menu, MenuItem, Section, Title, TitleRow } from "./styled";
@@ -54,8 +52,6 @@ type PROP = {
     set: Dispatch<SetStateAction<SimpleProposal[]>>;
     base: SimpleProposal[];
 };
-
-// page.tsx
 
 export default function Sidebar({ technicians, situation, set, base }: PROP) {
     const [openSituation, setOpenSituation] = useState(true);

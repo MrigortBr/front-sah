@@ -15,7 +15,7 @@ import Loading from "../spinner/page";
 import History, { HistoryRef } from "../questionModule/history/page";
 import FooterNewProposal from "../FooterNewProposal/page";
 
-export default function NewProposalActive() {
+export default function NewProposal() {
     const [data, setData] = useState<DataHab>({
         typeHab: [],
         diligencia: [],

@@ -42,9 +42,13 @@ export default function ProposalComponent() {
                 }
                 const data = response.data;
 
-                setTechnicians([...new Set(data.filter((v) => v.tecnico).map((v) => v.tecnico))]);
+                console.log(data);
 
-                setSituation([...new Set(data.filter((v) => v.situacao).map((v) => v.situacao))]);
+                try {
+                    setTechnicians([...new Set(data.filter((v) => v.tecnico).map((v) => v.tecnico))]);
+
+                    setSituation([...new Set(data.filter((v) => v.situacao).map((v) => v.situacao))]);
+                } catch (error) {}
 
                 setProposals(data);
                 setBaseProposals(data);

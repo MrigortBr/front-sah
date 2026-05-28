@@ -15,6 +15,18 @@ class ProposalService {
         }
     }
 
+    async getSimpleProposalFilter(filter: string): Promise<Response<SimpleProposal[]>> {
+        try {
+            const response = await api.get<Response<SimpleProposal[]>>(`/proposal/simpleForms?filter=${filter}`);
+
+            response.data.status = true;
+
+            return response.data;
+        } catch (err: Response<undefined> | unknown) {
+            return this.goCatch<SimpleProposal[]>(err);
+        }
+    }
+
     async getProposalData() {
         try {
             const response = await api.get<Response<DataHab>>("/proposal");
