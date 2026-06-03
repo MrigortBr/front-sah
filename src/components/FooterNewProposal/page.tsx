@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type PROPS = {
     generate: () => void;
-    deleteProposal: () => void;
+    deleteProposal?: () => void;
     load: boolean;
 };
 
@@ -17,7 +17,7 @@ export default function FooterNewProposal({ generate, deleteProposal, load }: PR
         <Container>
             <CancelButton onClick={() => router.push(PagesPermissions[pathname].go)}>← Cancelar</CancelButton>
             <SaveButton hidden={true}>💾 Salvar rascunho</SaveButton>
-            <DeleteButton onClick={() => deleteProposal()}>Deletar Habilitação</DeleteButton>
+            {deleteProposal ? <DeleteButton onClick={() => deleteProposal()}>Deletar Habilitação</DeleteButton> : <></>}
 
             <SendButton onClick={generate}>{load ? <Loading text="" /> : "Enviar proposta →"}</SendButton>
         </Container>
