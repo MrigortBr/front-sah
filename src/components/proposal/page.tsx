@@ -104,6 +104,7 @@ export default function ProposalComponent() {
                         <KpiCards data={baseProposals}></KpiCards>
 
                         <ProposalTable
+                            noEdit={false}
                             title={"Em análise / Em diligência"}
                             color={2}
                             proposals={proposals}
@@ -121,6 +122,7 @@ export default function ProposalComponent() {
                         ></ProposalTable>
 
                         <ProposalTable
+                            noEdit={false}
                             title="Enviadas ao DRAC"
                             color={0}
                             proposals={proposals}
@@ -138,6 +140,7 @@ export default function ProposalComponent() {
                         ></ProposalTable>
 
                         <ProposalTable
+                            noEdit={false}
                             title="Todas"
                             color={3}
                             proposals={proposals}
