@@ -39,6 +39,18 @@ class ProposalService {
         }
     }
 
+    async softDelete(id: number) {
+        try {
+            const response = await api.delete<Response<null>>(`/proposal/${id}`);
+
+            response.data.status = true;
+
+            return response.data;
+        } catch (err: Response<undefined> | unknown) {
+            return this.goCatch<null>(err);
+        }
+    }
+
     async getLengthProposal() {
         try {
             const response = await api.get<Response<{ situacao: string }[]>>("/proposal/count");

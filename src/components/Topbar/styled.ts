@@ -102,3 +102,5 @@ export const LogoutButton = styled.button`
         background: ${({ theme }) => theme.colors.whiteUltraOpaque};
     }
 `;
+
+export const TopBarCenter = styled.div``;

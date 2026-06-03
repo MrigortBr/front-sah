@@ -4,8 +4,7 @@ import styled, { css } from "styled-components";
 export const Container = styled.aside`
     width: 18vw;
     min-width: 240px;
-    height: 81vh;
-    max-height: 81vh;
+    min-height: 81vh;
 
     padding: 2vh 1vw;
 

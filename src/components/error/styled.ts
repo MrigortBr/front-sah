@@ -11,7 +11,6 @@ export const Container = styled.div`
     align-items: center;
     justify-content: center;
     gap: 2vh;
-
     background: #ffffff;
 `;
 

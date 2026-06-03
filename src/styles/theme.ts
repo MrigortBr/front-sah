@@ -4,7 +4,6 @@ export const theme = {
         greenBackground: "#1b5e3b",
         blueBackground: "#3135ec",
         blueBackgroundLight: "#6264ee",
-
         greenLight: "#2e7d52",
         greenUltraLight: "#28c56f",
         grayBackground: "#F4F6F4",
@@ -20,7 +19,9 @@ export const theme = {
         gray: "#6b7b6e",
         grayLight: "#f4f6f4",
         grayUltraLight: "#e4ebe6",
-
+        red: "#e52107d7",
+        redLight: "#fa2b10d7",
+        redBlack: "#9b1200d7",
         white: "#fff",
         text: {
             strong: "rgba(255, 255, 255, 0.95)",

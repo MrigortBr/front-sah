@@ -18,15 +18,17 @@ export default function KpiCards({ data }: PROPS) {
 
         const emAnalise = data.filter((v) => v.situacao === "Em análise");
 
-        const noDrac = data.filter((v) => v.situacao === "Enviadas ao DRAC");
+        const noDrac = data.filter((v) => v.situacao === "Enviada ao DRAC");
 
         const emDiligencia = data.filter((v) => v.situacao === "Em diligência");
 
-        const aprovadas2025 = data.filter((v) => {
-            const date = new Date(v.inicio_saips);
+        const aprovadas2025 = data.filter((v) => v.situacao === "Aprovada");
 
-            return v.situacao.toLowerCase().includes("aprovad") && date.getFullYear() === 2025;
-        });
+        // const aprovadas2025 = data.filter((v) => {
+        //     const date = new Date(v.inicio_saips);
+
+        //     return v.situacao.toLowerCase().includes("Aprovada") && date.getFullYear() === 2025;
+        // });
 
         const analise30Dias = emAnalise.filter((v) => {
             const startDate = new Date(v.inicio_saips);

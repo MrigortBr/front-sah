@@ -172,6 +172,24 @@ export default function NewProposalActive() {
         }
     }
 
+    async function deleteProposal() {
+        setIsSending(true);
+        const id = Number(searchParams.get("id") || 0);
+
+        const response = await proposalService.softDelete(id);
+
+        setIsSending(false);
+
+        callMessage(response.message, "success");
+        setTimeout(() => {
+            try {
+                router.push(PagesPermissions[pathname].go);
+            } catch (e) {
+                router.push("/");
+            }
+        }, 1000);
+    }
+
     async function callApi(data: unknown) {
         const id = Number(searchParams.get("id") || 0);
 
@@ -202,7 +220,7 @@ export default function NewProposalActive() {
                 ></EstablishmentLocation>
                 <License response={dataForm} refContainer={sectionRef5} licenses={data.typeHab} ref={licenseRef}></License>
                 <History response={dataForm} refContainer={sectionRef6} ref={historyRef}></History>
-                <FooterNewProposal generate={generatePayload} load={isSending}></FooterNewProposal>
+                <FooterNewProposal deleteProposal={deleteProposal} generate={generatePayload} load={isSending}></FooterNewProposal>
             </Questions>
         </Container>
     );

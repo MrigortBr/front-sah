@@ -34,7 +34,7 @@ export default function ProposalComponent() {
             try {
                 setLoadingData(true);
 
-                const response = await proposalService.getSimpleProposal();
+                const response = await proposalService.getSimpleProposalFilter("-Proposta concluída");
                 if (!response.status) {
                     callMessage(response.message ?? "Sistema SAH está temporariamente fora do ar!", "error");
                     setError({ message: response.message, function: () => {} });
@@ -47,7 +47,8 @@ export default function ProposalComponent() {
                 try {
                     setTechnicians([...new Set(data.filter((v) => v.tecnico).map((v) => v.tecnico))]);
 
-                    setSituation([...new Set(data.filter((v) => v.situacao).map((v) => v.situacao))]);
+                    setSituation(data.filter((v) => v.situacao).map((v) => v.situacao));
+                    console.log();
                 } catch (error) {}
 
                 setProposals(data);
@@ -100,7 +101,7 @@ export default function ProposalComponent() {
 
                 {tabValue == "lista-propostas" ? (
                     <>
-                        <KpiCards data={proposals}></KpiCards>
+                        <KpiCards data={baseProposals}></KpiCards>
 
                         <ProposalTable
                             title={"Em análise / Em diligência"}

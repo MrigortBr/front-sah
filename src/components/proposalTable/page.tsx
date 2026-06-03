@@ -21,7 +21,18 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 
-type ColumnKey = "nome_estabelecimento" | "saips" | "uf_estabelecimento" | "tipohabilitacao" | "situacao" | "tecnico" | "inicio_saips";
+type ColumnKey =
+    | "nome_estabelecimento"
+    | "aceleradores"
+    | "saips"
+    | "uf_estabelecimento"
+    | "tipohabilitacao"
+    | "situacao"
+    | "tecnico"
+    | "inicio_saips"
+    | "numero_aceleradores"
+    | "gestao"
+    | "ano_alteracao";
 
 type PROP = {
     proposals: SimpleProposal[];
@@ -30,6 +41,7 @@ type PROP = {
     situations?: string[];
     title: string;
     color: number;
+    noEdit: boolean;
 };
 
 export const proposalCountColors = [
@@ -75,7 +87,7 @@ export const proposalCountColors = [
     },
 ];
 
-export default function ProposalTable({ proposals, headerItens, columns, situations, title, color }: PROP) {
+export default function ProposalTable({ proposals, headerItens, columns, situations, title, color, noEdit }: PROP) {
     const [seeAll, setSeeAll] = useState(false);
     const { onlyReading } = useAuth();
     const router = useRouter();
@@ -101,23 +113,25 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
                         <a>CNES: {proposal.cnes_estabelecimento}</a>
                     </MultiText>
                 );
+
             case "uf_estabelecimento":
                 return proposal.uf_estabelecimento;
-
             case "tipohabilitacao":
                 return proposal.tipohabilitacao.map((t) => `${t.codigo} ${t.descricao}`).join(", ");
-
             case "situacao":
                 return proposal.situacao;
-
             case "tecnico":
                 return proposal.tecnico;
-
             case "saips":
                 return proposal.saips;
-
             case "inicio_saips":
                 return new Date(proposal.inicio_saips).toLocaleDateString("pt-BR");
+            case "aceleradores":
+                return proposal.numero_aceleradores;
+            case "gestao":
+                return proposal.gestao;
+            case "ano_alteracao":
+                return proposal.ano_alteracao;
 
             default:
                 return "-";
@@ -148,7 +162,7 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
                         {headerItens.map((hi, idx) => (
                             <CustomTableTH key={idx}>{hi}</CustomTableTH>
                         ))}
-                        {onlyReading ? <></> : <CustomTableTH>Editar</CustomTableTH>}
+                        {noEdit ? <></> : onlyReading ? <></> : <CustomTableTH>Editar</CustomTableTH>}
                     </CustomTableTR>
                 </CustomTableThead>
 
@@ -158,7 +172,7 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
                             {columns.map((column, cidx) => (
                                 <CustomTableTD key={cidx}>{renderColumn(p, column)}</CustomTableTD>
                             ))}
-                            {onlyReading ? <></> : <CustomTableTDEdit onClick={() => handleClickEdit(p)}>Editar</CustomTableTDEdit>}
+                            {noEdit ? <></> : onlyReading ? <></> : <CustomTableTDEdit onClick={() => handleClickEdit(p)}>Editar</CustomTableTDEdit>}
                         </CustomTableTR>
                     ))}
                 </CustomTableTbody>

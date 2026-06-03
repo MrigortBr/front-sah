@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
     LogoutButton,
     TopbarBrand,
+    TopBarCenter,
     TopbarContainer,
     TopbarLogo,
     TopbarName,
@@ -52,6 +53,13 @@ export default function Topbar() {
                     <TopbarName>SAH</TopbarName>
                     <TopbarSub>Acompanhamento de Habilitações</TopbarSub>
                 </div>
+                <LogoutButton
+                    onClick={() => {
+                        window.location.href = "/modulos";
+                    }}
+                >
+                    Modulos
+                </LogoutButton>
             </TopbarBrand>
 
             <TopbarRight>

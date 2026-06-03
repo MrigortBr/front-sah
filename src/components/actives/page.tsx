@@ -13,6 +13,7 @@ import ExportData from "../exportData/page";
 import { useAlert } from "@/providers/alert/page";
 import ProposalTable from "../proposalTable/page";
 import SidebarActive from "../filterLeftActive/page";
+import KpiCardsTwo from "../kpiActive/pageTwo";
 
 export default function ActivesComponent() {
     const { onlyReading, isLoading, logout } = useAuth();
@@ -42,7 +43,6 @@ export default function ActivesComponent() {
                     return;
                 }
                 const data = response.data;
-
                 setUf([...new Set(data.filter((v) => v.uf_estabelecimento).map((v) => v.uf_estabelecimento))]);
 
                 const habs: string[] = [];
@@ -82,25 +82,20 @@ export default function ActivesComponent() {
             <ContainerProposal>
                 <TitleContainer>
                     <h1>Habilitações ativas</h1>
-                    {onlyReading ? (
-                        <span></span>
-                    ) : (
-                        <>
-                            <AddNewRequest onClick={() => router.push("/ativos/nova")}>+ Cadastrar nova proposta</AddNewRequest>
-                        </>
-                    )}
-                    <h2>{proposals.length} propostas em ativas</h2>
+                    <span></span>
+                    <h2>{proposals.length} Habilitações em ativas</h2>
                 </TitleContainer>
 
                 {tabValue == "lista-propostas" ? (
                     <>
-                        <KpiCards data={proposals}></KpiCards>
+                        <KpiCardsTwo data={proposals}></KpiCardsTwo>
                         <ProposalTable
                             title="Todas"
                             color={3}
+                            noEdit={true}
                             proposals={proposals}
-                            headerItens={["Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
-                            columns={["nome_estabelecimento", "uf_estabelecimento", "tipohabilitacao", "situacao", "tecnico", "inicio_saips"]}
+                            headerItens={["Estabelecimento", "UF", "Habilitação", "aceleradores", "Gestão", "Desde"]}
+                            columns={["nome_estabelecimento", "uf_estabelecimento", "tipohabilitacao", "aceleradores", "gestao", "ano_alteracao"]}
                             situations={["Proposta concluída"]}
                         ></ProposalTable>
                     </>

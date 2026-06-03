@@ -43,6 +43,18 @@ export const SaveButton = styled.button`
     }
 `;
 
+export const DeleteButton = styled(SaveButton)`
+    border: 1px solid ${({ theme }) => theme.colors.redBlack};
+    background-color: ${({ theme }) => theme.colors.red};
+    color: ${({ theme }) => theme.colors.white};
+
+    &:hover {
+        border: 1px solid ${({ theme }) => theme.colors.redLight};
+        background: ${({ theme }) => theme.colors.redBlack};
+        color: ${({ theme }) => theme.colors.white};
+    }
+`;
+
 export const SendButton = styled.button`
     border-radius: 10px;
     border: 1px solid transparent;
