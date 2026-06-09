@@ -15,6 +15,7 @@ import {
     LeftHeader,
     MultiText,
     Title,
+    TitleTwo,
     ViewAll,
 } from "./styled";
 import { useMemo, useState } from "react";
@@ -32,16 +33,20 @@ type ColumnKey =
     | "inicio_saips"
     | "numero_aceleradores"
     | "gestao"
+    | "numero_unico_protoclo"
     | "ano_alteracao";
 
 type PROP = {
     proposals: SimpleProposal[];
     headerItens: string[];
     columns: ColumnKey[];
-    situations?: string[];
     title: string;
     color: number;
+
     noEdit: boolean;
+    situations?: string[];
+    search?: boolean;
+    onClick?: "open";
 };
 
 export const proposalCountColors = [
@@ -87,18 +92,33 @@ export const proposalCountColors = [
     },
 ];
 
-export default function ProposalTable({ proposals, headerItens, columns, situations, title, color, noEdit }: PROP) {
+export default function ProposalTable({ proposals, search = false, headerItens, columns, situations, title, color, noEdit, onClick }: PROP) {
     const [seeAll, setSeeAll] = useState(false);
     const { onlyReading } = useAuth();
     const router = useRouter();
+    const [searchValue, setSearchValue] = useState("");
 
-    const filteredProposals = useMemo(() => {
-        if (!situations || situations.length === 0) {
+    const searchedProposals = useMemo(() => {
+        if (!searchValue.trim()) {
             return proposals;
         }
 
-        return proposals.filter((p) => situations.some((s) => s.toLowerCase() === p.situacao.toLowerCase()));
-    }, [proposals, situations]);
+        const search = searchValue.toLowerCase();
+
+        return proposals.filter((p) =>
+            [p.nome_estabelecimento, p.cnes_estabelecimento, p.tecnico, p.saips, p.numero_unico_protoclo, p.uf_estabelecimento, p.situacao]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(search))
+        );
+    }, [proposals, searchValue]);
+
+    const filteredProposals = useMemo(() => {
+        if (!situations || situations.length === 0) {
+            return searchedProposals;
+        }
+
+        return searchedProposals.filter((p) => situations.some((s) => s.toLowerCase() === p.situacao.toLowerCase()));
+    }, [searchedProposals, situations]);
 
     const visibleProposals = useMemo(() => {
         return seeAll ? filteredProposals : filteredProposals.slice(0, 5);
@@ -128,6 +148,8 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
                 return new Date(proposal.inicio_saips).toLocaleDateString("pt-BR");
             case "aceleradores":
                 return proposal.numero_aceleradores;
+            case "numero_unico_protoclo":
+                return proposal.numero_unico_protoclo;
             case "gestao":
                 return proposal.gestao;
             case "ano_alteracao":
@@ -142,8 +164,17 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
         router.push(`/propostas/nova?id=${p.id_habilitacao}`);
     };
 
+    const handleClick = (p: SimpleProposal) => {
+        if (onClick) {
+            switch (onClick) {
+                case "open":
+                    router.push(`/ativos/ler?id=${p.id_habilitacao}`);
+            }
+        }
+    };
+
     return (
-        <Container hidden={filteredProposals.length == 0}>
+        <Container hidden={filteredProposals.length == 0 && search == false}>
             <Header>
                 <LeftHeader>
                     <Title>{title}</Title>
@@ -153,12 +184,30 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
                     </Count>
                 </LeftHeader>
 
+                {search && (
+                    <input
+                        type="text"
+                        placeholder="🔍 Buscar proposta..."
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        style={{
+                            width: 300,
+                            padding: "8px 12px",
+                            borderRadius: 8,
+                            border: "1px solid #ddd",
+                            outline: "none",
+                            marginLeft: "auto",
+                            marginRight: "1dvw",
+                        }}
+                    />
+                )}
+
                 {filteredProposals.length < 5 ? <></> : <ViewAll onClick={() => setSeeAll((o) => !o)}>{seeAll ? "Ver menos" : "Ver todas"}</ViewAll>}
             </Header>
 
             <CustomTable>
-                <CustomTableThead>
-                    <CustomTableTR>
+                <CustomTableThead hidden={visibleProposals.length == 0}>
+                    <CustomTableTR $cursor={""}>
                         {headerItens.map((hi, idx) => (
                             <CustomTableTH key={idx}>{hi}</CustomTableTH>
                         ))}
@@ -168,7 +217,7 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
 
                 <CustomTableTbody>
                     {visibleProposals.map((p, idx) => (
-                        <CustomTableTR key={idx}>
+                        <CustomTableTR key={idx} onClick={() => handleClick(p)} $cursor={onClick ? "pointer" : ""}>
                             {columns.map((column, cidx) => (
                                 <CustomTableTD key={cidx}>{renderColumn(p, column)}</CustomTableTD>
                             ))}
@@ -177,6 +226,14 @@ export default function ProposalTable({ proposals, headerItens, columns, situati
                     ))}
                 </CustomTableTbody>
             </CustomTable>
+
+            {visibleProposals.length == 0 ? (
+                <Header>
+                    <TitleTwo>Sem Dados</TitleTwo>
+                </Header>
+            ) : (
+                <></>
+            )}
         </Container>
     );
 }

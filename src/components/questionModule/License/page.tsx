@@ -32,9 +32,10 @@ type PROP = {
     refContainer: RefObject<HTMLDivElement | null>;
     licenses: TypeHab[];
     response?: HabilitacaoExitingResponse;
+    isReading?: boolean;
 };
 
-const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response }, ref) => {
+const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response, isReading }, ref) => {
     const [selectedLicenses, setSelectedLicenses] = useState<number[]>([]);
 
     const [isValid, setIsValid] = useState(false);
@@ -42,7 +43,7 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
     const { callMessage } = useAlert();
 
     function toggleLicense(id: number) {
-        setSelectedLicenses((old) => (old.includes(id) ? old.filter((item) => item !== id) : [...old, id]));
+        if (!isReading) setSelectedLicenses((old) => (old.includes(id) ? old.filter((item) => item !== id) : [...old, id]));
     }
 
     useEffect(() => {

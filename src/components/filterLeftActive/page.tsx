@@ -5,15 +5,15 @@ import { CollapseButton, Container, Icon, Label, Left, Menu, MenuItem, Section, 
 import { SimpleProposal } from "@/services/proposal/type";
 
 type PROP = {
-    uf: string[];
+    uf?: string[];
     hab: string[];
     set: Dispatch<SetStateAction<SimpleProposal[]>>;
     base: SimpleProposal[];
 };
 
-export default function SidebarActive({ uf, hab, set, base }: PROP) {
-    const [openUf, setOpenUf] = useState(true);
-    const [openHab, setOpenHab] = useState(true);
+export default function SidebarActive({ uf = [], hab, set, base }: PROP) {
+    const [openUf, setOpenUf] = useState(false);
+    const [openHab, setOpenHab] = useState(false);
 
     const [selectedUf, setSelectedUf] = useState("*");
     const [selectedHab, setSelectedHab] = useState("*");

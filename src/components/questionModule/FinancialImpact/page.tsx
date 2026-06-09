@@ -21,9 +21,10 @@ export type FinancialImpactRef = {
 type PROP = {
     refContainer: RefObject<HTMLDivElement | null>;
     response?: HabilitacaoExitingResponse;
+    isReading?: boolean;
 };
 
-const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, response }, ref) => {
+const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, response, isReading }, ref) => {
     const [impactMensal, setImpactMensal] = useState("");
 
     const [impactAnual, setImpactAnual] = useState("");
@@ -154,13 +155,13 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
                 <InputComponent>
                     <InputText>Impacto Anual</InputText>
 
-                    <Input value={impactAnual} onChange={(e) => handleImpactAnual(e.target.value)} placeholder="0,00" />
+                    <Input value={impactAnual} onChange={(e) => handleImpactAnual(e.target.value)} placeholder="0,00" disabled={isReading} />
                 </InputComponent>
 
                 <InputComponent>
                     <InputText>Parcela Única</InputText>
 
-                    <Input value={parcelaUnica} onChange={(e) => handleUniqueParcel(e.target.value)} placeholder="0,00" />
+                    <Input value={parcelaUnica} onChange={(e) => handleUniqueParcel(e.target.value)} placeholder="0,00" disabled={isReading} />
 
                     <InputDescription>R$ pagamento único</InputDescription>
                 </InputComponent>

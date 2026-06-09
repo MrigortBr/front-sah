@@ -41,6 +41,11 @@ export const Title = styled.h2`
     color: ${({ theme }) => theme.colors.text};
 `;
 
+export const TitleTwo = styled(Title)`
+    text-align: center;
+    width: 100%;
+`;
+
 export const Count = styled.div`
     padding: 0.3rem 0.7rem;
 
@@ -86,9 +91,10 @@ export const CustomTableThead = styled.thead`
 
 export const CustomTableTbody = styled.tbody``;
 
-export const CustomTableTR = styled.tr`
+export const CustomTableTR = styled.tr<{ $cursor: string }>`
     &:hover {
         background-color: ${({ theme }) => theme.colors.grayBackground};
+        cursor: ${({ $cursor }) => $cursor};
     }
 `;
 

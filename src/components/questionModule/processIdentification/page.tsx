@@ -46,9 +46,10 @@ type PROP = {
     tec: Technician[];
     dili: Diligencia[];
     response?: HabilitacaoExitingResponse;
+    isReading?: boolean;
 };
 
-const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refContainer, tec, dili, response }, ref) => {
+const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refContainer, tec, dili, response, isReading }, ref) => {
     const [saips, setSaips] = useState("");
     const [nup, setNup] = useState("");
     const [situation, setSituation] = useState(statusMock[0]);
@@ -65,7 +66,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
     const [isValid, setIsValid] = useState(false);
 
     function toggleDiligence(id: number) {
-        setSelectedDiligence((old) => (old.includes(id) ? old.filter((item) => item !== id) : [...old, id]));
+        if (!isReading) setSelectedDiligence((old) => (old.includes(id) ? old.filter((item) => item !== id) : [...old, id]));
     }
 
     function formatDate(date: string) {
@@ -159,17 +160,17 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
                 <InputText>
                     SAIPS <a>*</a>
                 </InputText>
-                <Input value={saips} onChange={(e) => setSaips(e.target.value)} />
+                <Input value={saips} onChange={(e) => setSaips(e.target.value)} disabled={isReading} />
             </InputComponent>
             <InputComponent>
                 <InputText>NUP</InputText>
-                <Input value={nup} onChange={(e) => setNup(e.target.value)} />
+                <Input value={nup} onChange={(e) => setNup(e.target.value)} disabled={isReading} />
             </InputComponent>
             <InputComponent>
                 <InputText>
                     Situação <a>*</a>
                 </InputText>
-                <InputSelect value={situation} onChange={(e) => setSituation(e.target.value)}>
+                <InputSelect value={situation} onChange={(e) => setSituation(e.target.value)} disabled={isReading}>
                     {statusMock.map((v, idx) => (
                         <option key={idx} value={v}>
                             {v}
@@ -181,7 +182,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
                 <InputText>
                     Tipo de Financiamento <a>*</a>
                 </InputText>
-                <InputSelect value={financingType} onChange={(e) => setFinancingType(e.target.value)}>
+                <InputSelect value={financingType} onChange={(e) => setFinancingType(e.target.value)} disabled={isReading}>
                     {typeFin.map((v, idx) => (
                         <option key={idx} value={v}>
                             {v}
@@ -193,7 +194,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
                 <InputText>
                     Técnico Responsável <a>*</a>
                 </InputText>
-                <InputSelect value={technician} onChange={(e) => setTechnician(e.target.value)}>
+                <InputSelect value={technician} onChange={(e) => setTechnician(e.target.value)} disabled={isReading}>
                     <option value="">Selecione</option>
                     {tec.map((v) => (
                         <option key={v.id} value={v.id}>
@@ -204,7 +205,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
             </InputComponent>
             <InputComponent>
                 <InputText>Nº Portaria de Habilitação</InputText>
-                <Input value={ordinance} onChange={(e) => setOrdinance(e.target.value)} />
+                <Input value={ordinance} onChange={(e) => setOrdinance(e.target.value)} disabled={isReading} />
             </InputComponent>
             <DiligenceContainer>
                 <DiligenceTitle>
@@ -222,18 +223,19 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
                     <InputText>
                         Início no SAIPS <a>*</a>
                     </InputText>
-                    <Input type="date" value={dateSaips} onChange={(e) => setDateSaips(e.target.value)} />
+                    <Input type="date" value={dateSaips} onChange={(e) => setDateSaips(e.target.value)} disabled={isReading} />
                     <InputDescription>Resposta única e fixa</InputDescription>
                 </InputComponent>
                 <InputComponent>
                     <InputText>
                         Entrada na DECAN <a>*</a>
                     </InputText>
-                    <Input type="date" value={dateDecan} onChange={(e) => setDateDecan(e.target.value)} />
+                    <Input type="date" value={dateDecan} onChange={(e) => setDateDecan(e.target.value)} disabled={isReading} />
                     <InputDescription>Resposta única e fixa</InputDescription>
                 </InputComponent>
                 <InputComponent>
-                    <InputText>Envio ao DRAC</InputText> <Input type="date" value={dateDrac} onChange={(e) => setDateDrac(e.target.value)} />
+                    <InputText>Envio ao DRAC</InputText>{" "}
+                    <Input type="date" value={dateDrac} onChange={(e) => setDateDrac(e.target.value)} disabled={isReading} />
                 </InputComponent>
             </DateContainer>
             {!isValid && <InputDescription>Preencha todos os campos obrigatórios.</InputDescription>}

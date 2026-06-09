@@ -27,8 +27,8 @@ export const PagesPermissions: Record<string, PagePermission> = {
         perm: [1, 2, 3],
         go: "/modulos",
     },
-    "/ativos/nova": {
+    "/ativos/ler": {
         perm: [1, 2],
-        go: "/propostas",
+        go: "/ativos",
     },
 };

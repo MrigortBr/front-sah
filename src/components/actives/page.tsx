@@ -93,6 +93,8 @@ export default function ActivesComponent() {
                             title="Todas"
                             color={3}
                             noEdit={true}
+                            onClick={"open"}
+                            search={true}
                             proposals={proposals}
                             headerItens={["Estabelecimento", "UF", "Habilitação", "aceleradores", "Gestão", "Desde"]}
                             columns={["nome_estabelecimento", "uf_estabelecimento", "tipohabilitacao", "aceleradores", "gestao", "ano_alteracao"]}

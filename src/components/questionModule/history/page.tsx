@@ -36,9 +36,10 @@ export type HistoryRef = {
 type PROP = {
     refContainer: RefObject<HTMLDivElement | null>;
     response?: HabilitacaoExitingResponse;
+    isReading?: boolean;
 };
 
-const History = forwardRef<HistoryRef, PROP>(({ refContainer, response }, ref) => {
+const History = forwardRef<HistoryRef, PROP>(({ refContainer, response, isReading }, ref) => {
     const [historyList, setHistoryList] = useState<HistoryItem[]>([
         {
             year: "",
@@ -163,19 +164,20 @@ const History = forwardRef<HistoryRef, PROP>(({ refContainer, response }, ref) =
                                 onChange={(e) => updateHistory(index, "year", e.target.value)}
                                 placeholder="2025"
                                 maxLength={4}
+                                disabled={isReading}
                             />
                         </InputComponent>
 
                         <InputComponent>
                             <InputText>Código(s) de Habilitação</InputText>
 
-                            <Input value={history.code} onChange={(e) => updateHistory(index, "code", e.target.value)} />
+                            <Input value={history.code} onChange={(e) => updateHistory(index, "code", e.target.value)} disabled={isReading} />
                         </InputComponent>
                     </HistoryContainer>
                 );
             })}
 
-            <HistoryAdd onClick={addHistory}>+ Adicionar alteração no histórico</HistoryAdd>
+            {!isReading ? <HistoryAdd onClick={addHistory}>+ Adicionar alteração no histórico</HistoryAdd> : <></>}
 
             {!isValid && <InputDescription>Preencha corretamente os anos e os códigos das habilitações do histórico.</InputDescription>}
         </Card>

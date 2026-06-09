@@ -49,9 +49,10 @@ type PROP = {
     refContainer: RefObject<HTMLDivElement | null>;
     subRef: RefObject<HTMLDivElement | null>;
     response?: HabilitacaoExitingResponse;
+    isReading?: boolean;
 };
 
-const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refContainer, subRef, response }, ref) => {
+const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refContainer, subRef, response, isReading }, ref) => {
     const [cnes, setCnes] = useState("");
 
     const [establishmentName, setEstablishmentName] = useState("");
@@ -192,8 +193,6 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
     } {
         const data = response;
 
-        console.log(data);
-
         return {
             cnes: data.cnes ?? "",
 
@@ -233,7 +232,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                         CNES<a>*</a>
                     </InputText>
 
-                    <Input value={cnes} onChange={(e) => handleCnes(e.target.value)} maxLength={7} />
+                    <Input value={cnes} onChange={(e) => handleCnes(e.target.value)} maxLength={7} disabled={isReading} />
 
                     <InputDescription>{loading ? "Carregando dados..." : "7 dígitos — dados preenchidos automaticamente"}</InputDescription>
                 </InputComponentUnique>
@@ -295,7 +294,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                         Nº Aceleradores / Cobaltos<a>*</a>
                     </InputText>
 
-                    <Input value={accelerators} onChange={(e) => setAccelerators(e.target.value.replace(/\D/g, ""))} />
+                    <Input value={accelerators} onChange={(e) => setAccelerators(e.target.value.replace(/\D/g, ""))} disabled={isReading} />
 
                     <InputDescription>Único campo a preencher manualmente</InputDescription>
                 </InputComponent>
@@ -404,7 +403,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
                 </InputComponent>
                 <InputComponent>
                     <InputText>Novos Casos de Câncer pactuados em CIB</InputText>
-                    <Input value={newCasesCIB} onChange={(e) => setNewCasesCIB(Number(e.target.value))} />
+                    <Input value={newCasesCIB} onChange={(e) => setNewCasesCIB(Number(e.target.value))} disabled={isReading} />
                 </InputComponent>
             </LocationInfo>
 
