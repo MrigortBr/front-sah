@@ -108,6 +108,7 @@ export default function ProposalComponent() {
                             title={"Em análise / Em diligência"}
                             color={2}
                             proposals={proposals}
+                            search={true}
                             headerItens={["SAIPS", "NUP", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
                             columns={[
                                 "saips",
@@ -145,6 +146,7 @@ export default function ProposalComponent() {
                             noEdit={false}
                             title="Todas"
                             color={3}
+                            search={true}
                             proposals={proposals}
                             headerItens={["SAIPS", "NUP", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
                             columns={[

@@ -2,6 +2,7 @@
 
 import { SimpleProposal } from "@/services/proposal/type";
 import {
+    ClearFilterButton,
     Container,
     Count,
     CustomTable,
@@ -11,6 +12,9 @@ import {
     CustomTableTH,
     CustomTableThead,
     CustomTableTR,
+    FilterContainer,
+    FilterMenu,
+    FilterOption,
     Header,
     LeftHeader,
     MultiText,
@@ -21,6 +25,7 @@ import {
 import { useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
+import { Funnel } from "lucide-react";
 
 type ColumnKey =
     | "nome_estabelecimento"
@@ -98,6 +103,54 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
     const router = useRouter();
     const [searchValue, setSearchValue] = useState("");
 
+    const [openFilter, setOpenFilter] = useState<ColumnKey | null>(null);
+
+    const [columnFilters, setColumnFilters] = useState<Partial<Record<ColumnKey, string[]>>>({});
+
+    const getFilterValue = (proposal: SimpleProposal, column: ColumnKey): string => {
+        switch (column) {
+            case "nome_estabelecimento":
+                return proposal.nome_estabelecimento ?? "";
+
+            case "uf_estabelecimento":
+                return proposal.uf_estabelecimento ?? "";
+
+            case "tipohabilitacao":
+                return proposal.tipohabilitacao.map((t) => `${t.codigo} ${t.descricao}`).join(", ");
+
+            case "situacao":
+                return proposal.situacao ?? "";
+
+            case "tecnico":
+                return proposal.tecnico ?? "";
+
+            case "saips":
+                return proposal.saips ?? "";
+
+            case "inicio_saips":
+                return proposal.inicio_saips ? new Date(proposal.inicio_saips).toLocaleDateString("pt-BR") : "";
+
+            case "aceleradores":
+                return String(proposal.numero_aceleradores ?? "");
+
+            case "numero_unico_protoclo":
+                return proposal.numero_unico_protoclo || "-";
+
+            case "gestao":
+                return proposal.gestao ?? "";
+
+            case "ano_alteracao":
+                return String(proposal.ano_alteracao ?? "");
+
+            default:
+                return "";
+        }
+    };
+
+    const getColumnValues = (column: ColumnKey) => {
+        return [...new Set(proposals.map((p) => getFilterValue(p, column)).filter(Boolean))].sort();
+    };
+
     const searchedProposals = useMemo(() => {
         if (!searchValue.trim()) {
             return proposals;
@@ -113,12 +166,20 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
     }, [proposals, searchValue]);
 
     const filteredProposals = useMemo(() => {
-        if (!situations || situations.length === 0) {
-            return searchedProposals;
+        let result = searchedProposals;
+
+        if (situations?.length) {
+            result = result.filter((p) => situations.some((s) => s.toLowerCase() === p.situacao.toLowerCase()));
         }
 
-        return searchedProposals.filter((p) => situations.some((s) => s.toLowerCase() === p.situacao.toLowerCase()));
-    }, [searchedProposals, situations]);
+        Object.entries(columnFilters).forEach(([column, values]) => {
+            if (!values?.length) return;
+
+            result = result.filter((proposal) => values.includes(getFilterValue(proposal, column as ColumnKey)));
+        });
+
+        return result;
+    }, [searchedProposals, situations, columnFilters]);
 
     const visibleProposals = useMemo(() => {
         return seeAll ? filteredProposals : filteredProposals.slice(0, 5);
@@ -149,12 +210,11 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
             case "aceleradores":
                 return proposal.numero_aceleradores;
             case "numero_unico_protoclo":
-                return proposal.numero_unico_protoclo;
+                return proposal.numero_unico_protoclo == "" ? "-" : proposal.numero_unico_protoclo;
             case "gestao":
                 return proposal.gestao;
             case "ano_alteracao":
                 return proposal.ano_alteracao;
-
             default:
                 return "-";
         }
@@ -170,6 +230,8 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                 case "open":
                     router.push(`/ativos/ler?id=${p.id_habilitacao}`);
             }
+        } else if (!noEdit) {
+            handleClickEdit(p);
         }
     };
 
@@ -208,20 +270,80 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
             <CustomTable>
                 <CustomTableThead hidden={visibleProposals.length == 0}>
                     <CustomTableTR $cursor={""}>
-                        {headerItens.map((hi, idx) => (
-                            <CustomTableTH key={idx}>{hi}</CustomTableTH>
-                        ))}
-                        {noEdit ? <></> : onlyReading ? <></> : <CustomTableTH>Editar</CustomTableTH>}
+                        {headerItens.map((hi, idx) => {
+                            const column = columns[idx];
+
+                            return (
+                                <CustomTableTH key={idx}>
+                                    <FilterContainer>
+                                        <p
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+
+                                                setOpenFilter(openFilter === column ? null : column);
+                                            }}
+                                        >
+                                            {hi}
+                                            <Funnel
+                                                size={16}
+                                                color={columnFilters[column]?.length ? "#1976d2" : undefined}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+
+                                                    setOpenFilter(openFilter === column ? null : column);
+                                                }}
+                                            />
+                                        </p>
+
+                                        {openFilter === column && (
+                                            <FilterMenu>
+                                                {getColumnValues(column).map((value) => (
+                                                    <FilterOption key={value}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={columnFilters[column]?.includes(value) ?? false}
+                                                            onChange={(e) => {
+                                                                const current = columnFilters[column] || [];
+
+                                                                setColumnFilters({
+                                                                    ...columnFilters,
+                                                                    [column]: e.target.checked
+                                                                        ? [...current, value]
+                                                                        : current.filter((v) => v !== value),
+                                                                });
+                                                            }}
+                                                        />
+
+                                                        {value}
+                                                    </FilterOption>
+                                                ))}
+
+                                                <ClearFilterButton
+                                                    onClick={() =>
+                                                        setColumnFilters({
+                                                            ...columnFilters,
+                                                            [column]: [],
+                                                        })
+                                                    }
+                                                >
+                                                    Limpar filtro
+                                                </ClearFilterButton>
+                                            </FilterMenu>
+                                        )}
+                                    </FilterContainer>
+                                </CustomTableTH>
+                            );
+                        })}
                     </CustomTableTR>
                 </CustomTableThead>
 
                 <CustomTableTbody>
                     {visibleProposals.map((p, idx) => (
-                        <CustomTableTR key={idx} onClick={() => handleClick(p)} $cursor={onClick ? "pointer" : ""}>
+                        <CustomTableTR key={idx} onClick={() => handleClick(p)} $cursor={onClick || !noEdit ? "pointer" : ""}>
                             {columns.map((column, cidx) => (
                                 <CustomTableTD key={cidx}>{renderColumn(p, column)}</CustomTableTD>
                             ))}
-                            {noEdit ? <></> : onlyReading ? <></> : <CustomTableTDEdit onClick={() => handleClickEdit(p)}>Editar</CustomTableTDEdit>}
+                            {/* {noEdit ? <></> : onlyReading ? <></> : <CustomTableTDEdit onClick={() => handleClickEdit(p)}>Editar</CustomTableTDEdit>} */}
                         </CustomTableTR>
                     ))}
                 </CustomTableTbody>

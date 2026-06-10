@@ -1,13 +1,16 @@
 import styled, { css } from "styled-components";
 
 export const Container = styled.div`
+    z-index: 1;
+
+    position: relative;
     width: 100%;
 
     background: ${({ theme }) => theme.colors.white};
 
     border-radius: 1rem;
 
-    overflow: auto;
+    overflow: visible;
 
     -webkit-box-shadow: 5px 5px 25px 15px ${({ theme }) => theme.colors.blackTransparent};
     box-shadow: 5px 5px 25px 15px ${({ theme }) => theme.colors.blackTransparent};
@@ -125,5 +128,71 @@ export const CustomTableTDEdit = styled(CustomTableTD)`
 export const MultiText = styled.div`
     & > a {
         color: ${({ theme }) => theme.colors.gray};
+    }
+`;
+
+export const FilterContainer = styled.div`
+    position: relative;
+
+    & > p {
+        display: flex;
+        cursor: pointer;
+        justify-content: center;
+        flex-wrap: nowrap;
+        & > svg {
+            height: ${({ theme }) => theme.fontSizes.sm};
+            cursor: pointer;
+        }
+    }
+`;
+
+export const FilterMenu = styled.div`
+    position: absolute;
+    top: 100%;
+    right: 0;
+
+    min-width: 220px;
+    max-height: 300px;
+
+    overflow-y: auto;
+
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    padding: 10px;
+
+    z-index: 999999;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+`;
+
+export const FilterOption = styled.label`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    cursor: pointer;
+    font-size: 13px;
+`;
+
+export const ClearFilterButton = styled.button`
+    border: none;
+
+    margin-top: 10px;
+    padding: 8px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    background: #f5f5f5;
+
+    &:hover {
+        background: #e9e9e9;
     }
 `;
