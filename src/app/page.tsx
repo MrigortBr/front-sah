@@ -5,11 +5,6 @@ import HeroPanel from "@/components/HeroPanel/page";
 import LoginPanel from "@/components/LoginPanel/page";
 import styled from "styled-components";
 
-export const metadata = {
-    title: "SAH - Sistema de Acompanhamento de Habilitações",
-    description: "Sistema de Acompanhamento de Habilitações",
-};
-
 export default function LoginPage() {
     return (
         <Container>
