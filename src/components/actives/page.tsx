@@ -90,7 +90,7 @@ export default function ActivesComponent() {
                     <>
                         <KpiCardsTwo data={proposals}></KpiCardsTwo>
                         <ProposalTable
-                            title="Todas"
+                            title="Habilitações ativas"
                             color={3}
                             noEdit={true}
                             onClick={"open"}

@@ -15,7 +15,7 @@ import Loading from "../spinner/page";
 import History, { HistoryRef } from "../questionModule/history/page";
 import FooterNewProposal from "../FooterNewProposal/page";
 
-export default function LoadActiveComponent() {
+export default function NewProposalActive() {
     const [data, setData] = useState<DataHab>({
         typeHab: [],
         diligencia: [],
@@ -90,6 +90,66 @@ export default function LoadActiveComponent() {
 
     if (isLoading) return <Loading></Loading>;
 
+    async function generatePayload() {
+        if (isSending) {
+            callMessage("Aguarde finalizar o envio", "info");
+            return;
+        }
+
+        const financialData = financialRef.current?.getData();
+
+        const licenseData = licenseRef.current?.getData();
+
+        const historyData = historyRef.current?.getData();
+
+        if (!financialData || !licenseData || !historyData) {
+            return undefined;
+        }
+
+        const data = {
+            inpacto_mensal: Number(financialData.impactAnual.replace(/\./g, "").replace(",", ".")),
+
+            parcela_unica: Number(financialData.parcelaUnica.replace(/\./g, "").replace(",", ".")),
+
+            tipohabilitacao: licenseData.selectedLicensesData.map((item) => item.codigo),
+
+            hitorico: historyData.historyList.map((item, index) => ({
+                sequencia: String(index + 1),
+
+                anoAlteracao: item.year,
+
+                codigos: item.code,
+            })),
+        };
+
+        setIsLoading(true);
+
+        const response = await callApi(data);
+
+        setIsSending(false);
+
+        if (!response.status) {
+            callMessage(response.message, "error");
+        } else {
+            callMessage(response.message, "success");
+            setTimeout(() => {
+                try {
+                    router.push(PagesPermissions[pathname].go);
+                } catch (e) {
+                    router.push("/");
+                }
+            }, 1000);
+        }
+    }
+
+    async function callApi(data: unknown) {
+        const id = Number(searchParams.get("id") || 0);
+
+        return await proposalService.updateProposalActive(data, id);
+    }
+
+    if (isLoading) return <Loading></Loading>;
+
     return (
         <Container>
             <SidebarNewProposal
@@ -105,7 +165,7 @@ export default function LoadActiveComponent() {
                     dili={data.diligencia}
                     response={dataForm}
                 ></ProcessIdentification>
-                <FinancialImpact isReading={true} response={dataForm} refContainer={sectionRef2} ref={financialRef}></FinancialImpact>
+                <FinancialImpact response={dataForm} refContainer={sectionRef2} ref={financialRef}></FinancialImpact>
                 <EstablishmentLocation
                     isReading={true}
                     response={dataForm}
@@ -113,9 +173,9 @@ export default function LoadActiveComponent() {
                     subRef={sectionRef4}
                     ref={establishmentRef}
                 ></EstablishmentLocation>
-                <License isReading={true} response={dataForm} refContainer={sectionRef5} licenses={data.typeHab} ref={licenseRef}></License>
-                <History isReading={true} response={dataForm} refContainer={sectionRef6} ref={historyRef}></History>
-                <FooterNewProposal load={isSending}></FooterNewProposal>
+                <License response={dataForm} refContainer={sectionRef5} licenses={data.typeHab} ref={licenseRef}></License>
+                <History response={dataForm} refContainer={sectionRef6} ref={historyRef}></History>
+                <FooterNewProposal generate={generatePayload} load={isSending}></FooterNewProposal>
             </Questions>
         </Container>
     );

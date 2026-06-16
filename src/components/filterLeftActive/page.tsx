@@ -13,7 +13,7 @@ type PROP = {
 
 export default function SidebarActive({ uf = [], hab, set, base }: PROP) {
     const [openUf, setOpenUf] = useState(false);
-    const [openHab, setOpenHab] = useState(false);
+    const [openHab, setOpenHab] = useState(true);
 
     const [selectedUf, setSelectedUf] = useState("*");
     const [selectedHab, setSelectedHab] = useState("*");

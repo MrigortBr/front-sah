@@ -18,9 +18,11 @@ import {
     Header,
     LeftHeader,
     MultiText,
+    PaginationButton,
+    PaginationContainer,
+    PaginationInfo,
     Title,
     TitleTwo,
-    ViewAll,
 } from "./styled";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
@@ -97,8 +99,10 @@ export const proposalCountColors = [
     },
 ];
 
+const PAGE_SIZE = 5;
+
 export default function ProposalTable({ proposals, search = false, headerItens, columns, situations, title, color, noEdit, onClick }: PROP) {
-    const [seeAll, setSeeAll] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
     const { onlyReading } = useAuth();
     const router = useRouter();
     const [searchValue, setSearchValue] = useState("");
@@ -106,6 +110,10 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
     const [openFilter, setOpenFilter] = useState<ColumnKey | null>(null);
 
     const [columnFilters, setColumnFilters] = useState<Partial<Record<ColumnKey, string[]>>>({});
+
+    function resetPage() {
+        setCurrentPage(1);
+    }
 
     const getFilterValue = (proposal: SimpleProposal, column: ColumnKey): string => {
         switch (column) {
@@ -181,9 +189,14 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
         return result;
     }, [searchedProposals, situations, columnFilters]);
 
+    const totalPages = Math.max(1, Math.ceil(filteredProposals.length / PAGE_SIZE));
+
+    const safePage = Math.min(currentPage, totalPages);
+
     const visibleProposals = useMemo(() => {
-        return seeAll ? filteredProposals : filteredProposals.slice(0, 5);
-    }, [seeAll, filteredProposals]);
+        const start = (safePage - 1) * PAGE_SIZE;
+        return filteredProposals.slice(start, start + PAGE_SIZE);
+    }, [filteredProposals, safePage]);
 
     function renderColumn(proposal: SimpleProposal, column: ColumnKey) {
         switch (column) {
@@ -251,7 +264,10 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                         type="text"
                         placeholder="🔍 Buscar proposta..."
                         value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
+                        onChange={(e) => {
+                            setSearchValue(e.target.value);
+                            resetPage();
+                        }}
                         style={{
                             width: 300,
                             padding: "8px 12px",
@@ -263,8 +279,6 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                         }}
                     />
                 )}
-
-                {filteredProposals.length < 5 ? <></> : <ViewAll onClick={() => setSeeAll((o) => !o)}>{seeAll ? "Ver menos" : "Ver todas"}</ViewAll>}
             </Header>
 
             <CustomTable>
@@ -304,13 +318,13 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                                                             checked={columnFilters[column]?.includes(value) ?? false}
                                                             onChange={(e) => {
                                                                 const current = columnFilters[column] || [];
-
                                                                 setColumnFilters({
                                                                     ...columnFilters,
                                                                     [column]: e.target.checked
                                                                         ? [...current, value]
                                                                         : current.filter((v) => v !== value),
                                                                 });
+                                                                resetPage();
                                                             }}
                                                         />
 
@@ -319,12 +333,10 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                                                 ))}
 
                                                 <ClearFilterButton
-                                                    onClick={() =>
-                                                        setColumnFilters({
-                                                            ...columnFilters,
-                                                            [column]: [],
-                                                        })
-                                                    }
+                                                    onClick={() => {
+                                                        setColumnFilters({ ...columnFilters, [column]: [] });
+                                                        resetPage();
+                                                    }}
                                                 >
                                                     Limpar filtro
                                                 </ClearFilterButton>
@@ -349,12 +361,30 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                 </CustomTableTbody>
             </CustomTable>
 
-            {visibleProposals.length == 0 ? (
+            {visibleProposals.length === 0 ? (
                 <Header>
                     <TitleTwo>Sem Dados</TitleTwo>
                 </Header>
             ) : (
-                <></>
+                <PaginationContainer>
+                    <PaginationButton onClick={() => setCurrentPage(1)} disabled={safePage === 1}>
+                        «
+                    </PaginationButton>
+                    <PaginationButton onClick={() => setCurrentPage((p) => p - 1)} disabled={safePage === 1}>
+                        ‹ Anterior
+                    </PaginationButton>
+
+                    <PaginationInfo>
+                        Página {safePage} de {totalPages}
+                    </PaginationInfo>
+
+                    <PaginationButton onClick={() => setCurrentPage((p) => p + 1)} disabled={safePage === totalPages}>
+                        Próxima ›
+                    </PaginationButton>
+                    <PaginationButton onClick={() => setCurrentPage(totalPages)} disabled={safePage === totalPages}>
+                        »
+                    </PaginationButton>
+                </PaginationContainer>
             )}
         </Container>
     );

@@ -126,7 +126,7 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
     }, [response]);
 
     function getData(): ProcessIdentificationData | undefined {
-        if (isValid) {
+        if (isValid || isReading) {
             return {
                 saips,
                 nup,

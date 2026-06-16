@@ -196,3 +196,43 @@ export const ClearFilterButton = styled.button`
         background: #e9e9e9;
     }
 `;
+
+export const PaginationContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 12px 10px;
+    border-top: 1px solid ${({ theme }) => theme.colors.grayBackground};
+`;
+
+export const PaginationButton = styled.button<{ $active?: boolean }>`
+    border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.greenUltraLight : "#ddd")};
+    background: ${({ $active, theme }) => ($active ? theme.colors.greenUltraLight : "white")};
+    color: ${({ $active, theme }) => ($active ? theme.colors.text : theme.colors.text)};
+    font-weight: ${({ $active }) => ($active ? 700 : 400)};
+
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    transition: 200ms;
+
+    &:hover:not(:disabled) {
+        background: ${({ theme }) => theme.colors.greenUltraLight};
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+`;
+
+export const PaginationInfo = styled.span`
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    color: ${({ theme }) => theme.colors.gray};
+    white-space: nowrap;
+`;

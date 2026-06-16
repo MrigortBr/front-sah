@@ -98,6 +98,18 @@ class ProposalService {
         }
     }
 
+    async updateProposalActive(payload: unknown, id: number): Promise<Response<SimpleProposal[]>> {
+        try {
+            const response = await api.patch<Response<SimpleProposal[]>>(`/proposal/active/${id}`, payload);
+
+            response.data.status = true;
+
+            return response.data;
+        } catch (err: Response<undefined> | unknown) {
+            return this.goCatch<SimpleProposal[]>(err);
+        }
+    }
+
     private goCatch<T>(err: unknown): Response<T> {
         if (axios.isAxiosError<Response<T>>(err)) {
             return {
