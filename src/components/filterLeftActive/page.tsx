@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { CollapseButton, Container, Icon, Label, Left, Menu, MenuItem, Section, Title, TitleRow } from "./styled";
+import { CollapseButton, Container, Icon, Label, Left, Menu, MenuItem, MenuWrapper, Section, Title, TitleRow } from "./styled";
 
 import { SimpleProposal } from "@/services/proposal/type";
 
@@ -48,10 +48,10 @@ export default function SidebarActive({ uf = [], hab, set, base }: PROP) {
                 <TitleRow>
                     <Title>UF</Title>
 
-                    <CollapseButton onClick={() => setOpenUf(!openUf)}>{openUf ? "−" : "+"}</CollapseButton>
+                    <CollapseButton $open={openUf} onClick={() => setOpenUf(!openUf)}>▾</CollapseButton>
                 </TitleRow>
 
-                {openUf && (
+                <MenuWrapper $open={openUf}>
                     <Menu>
                         <MenuItem $active={selectedUf === "*"} onClick={() => handleFilters("uf", "*")}>
                             <Left>
@@ -71,7 +71,7 @@ export default function SidebarActive({ uf = [], hab, set, base }: PROP) {
                             </MenuItem>
                         ))}
                     </Menu>
-                )}
+                </MenuWrapper>
             </Section>
 
             {/* Habilitação */}
@@ -79,10 +79,10 @@ export default function SidebarActive({ uf = [], hab, set, base }: PROP) {
                 <TitleRow>
                     <Title>Habilitação</Title>
 
-                    <CollapseButton onClick={() => setOpenHab(!openHab)}>{openHab ? "−" : "+"}</CollapseButton>
+                    <CollapseButton $open={openHab} onClick={() => setOpenHab(!openHab)}>▾</CollapseButton>
                 </TitleRow>
 
-                {openHab && (
+                <MenuWrapper $open={openHab}>
                     <Menu>
                         <MenuItem $active={selectedHab === "*"} onClick={() => handleFilters("hab", "*")}>
                             <Left>
@@ -102,7 +102,7 @@ export default function SidebarActive({ uf = [], hab, set, base }: PROP) {
                             </MenuItem>
                         ))}
                     </Menu>
-                )}
+                </MenuWrapper>
             </Section>
         </Container>
     );

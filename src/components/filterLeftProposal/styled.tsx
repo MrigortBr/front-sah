@@ -4,6 +4,7 @@ import styled, { css } from "styled-components";
 export const Container = styled.aside`
     width: 18vw;
     min-width: 240px;
+    height: 100%;
     min-height: 81vh;
 
     padding: 2vh 1vw;
@@ -13,6 +14,9 @@ export const Container = styled.aside`
     display: flex;
     flex-direction: column;
     gap: 4vh;
+
+    overflow-y: auto;
+    overflow-x: hidden;
 
     -webkit-box-shadow: 5px 0px 22px 5px ${({ theme }) => theme.colors.grayLight};
     box-shadow: 5px 0px 22px 5px ${({ theme }) => theme.colors.grayLight};
@@ -116,22 +120,29 @@ export const Badge = styled.div`
     color: ${({ theme }) => theme.colors.greenDark};
 `;
 
-export const CollapseButton = styled.button`
+export const CollapseButton = styled.button<{ $open?: boolean }>`
     border: none;
     background: transparent;
-
     cursor: pointer;
-
-    font-size: 1.2rem;
-    font-weight: bold;
-
-    color: ${({ theme }) => theme.colors.text};
-
-    transition: 0.2s;
+    font-size: 1.1rem;
+    color: ${({ theme }) => theme.colors.gray};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.2s, transform 0.3s ease;
+    transform: ${({ $open }) => ($open ? "rotate(180deg)" : "rotate(0deg)")};
 
     &:hover {
-        opacity: 0.7;
+        background: ${({ theme }) => theme.colors.greenBackgroundLight};
     }
+`;
+
+export const MenuWrapper = styled.div<{ $open: boolean }>`
+    overflow: hidden;
+    max-height: ${({ $open }) => ($open ? "2000px" : "0")};
+    transition: max-height ${({ $open }) => ($open ? "0.4s ease" : "0.25s ease")};
 `;
 
 export const TitleRow = styled.div`

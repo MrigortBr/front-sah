@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { Badge, CollapseButton, Container, Icon, Label, Left, Menu, MenuItem, Section, Title, TitleRow } from "./styled";
+import { Badge, CollapseButton, Container, Icon, Label, Left, Menu, MenuItem, MenuWrapper, Section, Title, TitleRow } from "./styled";
 import { SimpleProposal } from "@/services/proposal/type";
 
 const statusMock = [
@@ -89,10 +89,10 @@ export default function Sidebar({ technicians, situation, set, base }: PROP) {
                 <TitleRow>
                     <Title>Situação</Title>
 
-                    <CollapseButton onClick={() => setOpenSituation(!openSituation)}>{openSituation ? "−" : "+"}</CollapseButton>
+                    <CollapseButton $open={openSituation} onClick={() => setOpenSituation(!openSituation)}>▾</CollapseButton>
                 </TitleRow>
 
-                {openSituation && (
+                <MenuWrapper $open={openSituation}>
                     <Menu>
                         <MenuItem $active={selectedSituation === "*"} onClick={() => handleFilters("situation", "*")}>
                             <Left>
@@ -120,17 +120,17 @@ export default function Sidebar({ technicians, situation, set, base }: PROP) {
                             </MenuItem>
                         ))}
                     </Menu>
-                )}
+                </MenuWrapper>
             </Section>
 
             <Section>
                 <TitleRow>
                     <Title>Técnico</Title>
 
-                    <CollapseButton onClick={() => setOpenTechnicians(!openTechnicians)}>{openTechnicians ? "−" : "+"}</CollapseButton>
+                    <CollapseButton $open={openTechnicians} onClick={() => setOpenTechnicians(!openTechnicians)}>▾</CollapseButton>
                 </TitleRow>
 
-                {openTechnicians && (
+                <MenuWrapper $open={openTechnicians}>
                     <Menu>
                         <MenuItem $active={selectedTechnician === "*"} onClick={() => handleFilters("technician", "*")}>
                             <Left>
@@ -150,7 +150,7 @@ export default function Sidebar({ technicians, situation, set, base }: PROP) {
                             </MenuItem>
                         ))}
                     </Menu>
-                )}
+                </MenuWrapper>
             </Section>
         </Container>
     );

@@ -127,7 +127,7 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(({ refC
         setQuiQtd(data.onco.quiQtd ?? "");
         setRadQtd(data.onco.radQtd ?? "");
         setRadVal(data.onco.radVal ?? "");
-        setNewCasesMacro(data.casosMacro.estimativa_casos);
+        setNewCasesMacro(data.casosMacro.estimativa_casos ?? "");
         setNewCasesState(data.estimativa.reduce((acc, item) => acc + Number(item.estimativa_casos), 0));
     }
 

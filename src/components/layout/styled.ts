@@ -15,8 +15,8 @@ export const Header = styled.header`
     min-height: 9vh;
 
     @media (max-width: 768px) {
-        min-height: 0dvh;
-        max-height: 10dvh;
+        height: auto;
+        min-height: 0;
     }
 `;
 
@@ -27,8 +27,10 @@ export const Content = styled.main`
     overflow-y: auto;
 
     @media (max-width: 768px) {
-        min-height: 0dvh;
-        max-height: 80dvh;
+        flex: 1;
+        min-height: 0;
+        height: auto;
+        max-height: unset;
     }
 `;
 

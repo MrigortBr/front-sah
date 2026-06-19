@@ -28,20 +28,8 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 import { Funnel } from "lucide-react";
-
-type ColumnKey =
-    | "nome_estabelecimento"
-    | "aceleradores"
-    | "saips"
-    | "uf_estabelecimento"
-    | "tipohabilitacao"
-    | "situacao"
-    | "tecnico"
-    | "inicio_saips"
-    | "numero_aceleradores"
-    | "gestao"
-    | "numero_unico_protoclo"
-    | "ano_alteracao";
+import { ColumnKey } from "@/lib/export/helpers";
+import TableExport from "@/components/tableExport/page";
 
 type PROP = {
     proposals: SimpleProposal[];
@@ -279,6 +267,13 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                         }}
                     />
                 )}
+
+                <TableExport
+                    headers={headerItens}
+                    columns={columns}
+                    data={filteredProposals}
+                    filename={title}
+                />
             </Header>
 
             <CustomTable>
