@@ -263,6 +263,90 @@ export const LicenseSubTitle = styled.h2`
     width: 100%;
 `;
 
+export const LicenseItem2 = styled(LicenseItem)<{ $inGroup?: boolean }>`
+    opacity: ${({ $inGroup }) => ($inGroup ? 0.4 : 1)};
+    pointer-events: ${({ $inGroup }) => ($inGroup ? "none" : "auto")};
+    cursor: ${({ $inGroup }) => ($inGroup ? "not-allowed" : "pointer")};
+`;
+
+export const GroupCard = styled.div<{ $bg: string; $border: string }>`
+    background-color: ${({ $bg }) => $bg};
+    border: 1.5px solid ${({ $border }) => $border};
+    border-radius: 10px;
+    padding: 10px 14px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+`;
+
+export const GroupCardBody = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+`;
+
+export const GroupCardCodes = styled.span<{ $color: string }>`
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    color: ${({ $color }) => $color};
+`;
+
+export const GroupCardLabel = styled.span`
+    font-size: ${({ theme }) => theme.fontSizes.xxs};
+    color: ${({ theme }) => theme.colors.gray};
+`;
+
+export const GroupCardType = styled.span<{ $color: string }>`
+    font-size: ${({ theme }) => theme.fontSizes.xxxs};
+    color: ${({ $color }) => $color};
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;
+
+export const GroupRemoveButton = styled.button`
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    color: ${({ theme }) => theme.colors.gray};
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.08);
+    }
+`;
+
+export const AddGroupButton = styled.button<{ $disabled?: boolean }>`
+    margin-top: 10px;
+    width: fit-content;
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: 1.5px dashed ${({ theme, $disabled }) => ($disabled ? theme.colors.gray : theme.colors.greenBackground)};
+    background: ${({ theme, $disabled }) => ($disabled ? theme.colors.grayBackground : theme.colors.greenBackgroundLight)};
+    color: ${({ theme, $disabled }) => ($disabled ? theme.colors.gray : theme.colors.greenBackground)};
+    font-size: ${({ theme }) => theme.fontSizes.xxs};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+    transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s;
+
+    &:hover:not([disabled]) {
+        background: ${({ theme }) => theme.colors.greenBackground};
+        border-color: ${({ theme }) => theme.colors.greenBackground};
+        color: ${({ theme }) => theme.colors.white};
+    }
+`;
+
 export const HistoryAdd = styled.button`
     background-color: ${({ theme }) => theme.colors.greenBackgroundLight};
     border: 1px dashed ${({ theme }) => theme.colors.greenBackground};

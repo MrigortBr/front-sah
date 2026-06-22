@@ -139,7 +139,7 @@ export default function NewProposalActive() {
 
             numero_aceleradores: Number(establishmentData.accelerators),
 
-            tipohabilitacao: licenseData.selectedLicensesData.map((item) => item.codigo),
+            tipohabilitacao: licenseData.tipohabilitacao,
 
             diligencia: processData.selectedDiligence,
 

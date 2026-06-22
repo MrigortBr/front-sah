@@ -17,6 +17,7 @@ export interface SimpleProposal {
         codigo: string;
         descricao: string;
         categoria: string;
+        group: number;
     }[];
 }
 
@@ -86,6 +87,7 @@ export type HabilitacaoExitingResponse = {
         codigo: string;
         descricao: string;
         categoria: string;
+        group: number;
     }[];
 
     diligencia: {
