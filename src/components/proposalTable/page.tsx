@@ -1,6 +1,7 @@
 // page.tsx
 
 import { SimpleProposal } from "@/services/proposal/type";
+import { findGroup } from "@/const/habGroups";
 import {
     ClearFilterButton,
     Container,
@@ -15,6 +16,12 @@ import {
     FilterContainer,
     FilterMenu,
     FilterOption,
+    HabBlock,
+    HabChip,
+    HabChipRow,
+    HabDesc,
+    HabGroup,
+    HabPlus,
     Header,
     LeftHeader,
     MultiText,
@@ -24,7 +31,7 @@ import {
     Title,
     TitleTwo,
 } from "./styled";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 import { Funnel } from "lucide-react";
@@ -198,8 +205,71 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
 
             case "uf_estabelecimento":
                 return proposal.uf_estabelecimento;
-            case "tipohabilitacao":
-                return proposal.tipohabilitacao.map((t) => `${t.codigo} ${t.descricao}`).join(", ");
+            case "tipohabilitacao": {
+                const items = proposal.tipohabilitacao;
+                const conjuntaRecords = proposal.conjunta ?? [];
+
+                // Agrupa itens: multi-código pelo valor de group, solo cada um separado
+                const habGroups: { key: number; groupOne: number; groupItems: typeof items }[] = [];
+                let soloKey = -1;
+                const multiTracker = new Map<number, number>();
+                for (const item of items) {
+                    if (item.group === 0) {
+                        habGroups.push({ key: soloKey--, groupOne: 0, groupItems: [item] });
+                    } else {
+                        if (!multiTracker.has(item.group)) {
+                            multiTracker.set(item.group, habGroups.length);
+                            habGroups.push({ key: item.group, groupOne: item.group, groupItems: [] });
+                        }
+                        habGroups[multiTracker.get(item.group)!].groupItems.push(item);
+                    }
+                }
+                // Ordena chips do menor para o maior dentro de cada grupo
+                habGroups.forEach((g) => g.groupItems.sort((a, b) => a.codigo.localeCompare(b.codigo)));
+
+                // Map: group_one → primeira conjunta (uma por grupo na exibição)
+                const conjuntaByGroupOne = new Map<number, (typeof conjuntaRecords)[0]>();
+                for (const c of conjuntaRecords) {
+                    if (!conjuntaByGroupOne.has(c.group_one)) conjuntaByGroupOne.set(c.group_one, c);
+                }
+
+                // Solo itens: mostra conjunta apenas na primeira linha
+                let soloConjuntaUsed = false;
+
+                return (
+                    <HabBlock>
+                        {habGroups.map(({ key, groupOne, groupItems }) => {
+                            // Conjunta para este grupo
+                            let conjuntaRec = conjuntaByGroupOne.get(groupOne);
+                            if (groupOne === 0 && conjuntaRec) {
+                                if (soloConjuntaUsed) conjuntaRec = undefined;
+                                else soloConjuntaUsed = true;
+                            }
+
+                            const isMulti = groupItems.length > 1;
+                            const hasConjunta = !!conjuntaRec;
+                            const ownType: "conj" | "solo" = hasConjunta || isMulti ? "conj" : "solo";
+                            const codes = groupItems.map((h) => h.codigo);
+                            const groupMatch = isMulti ? findGroup(codes) : null;
+                            const desc = groupMatch ? groupMatch.label : groupItems[0]?.descricao ?? "";
+
+                            return (
+                                <HabGroup key={key}>
+                                    <HabChipRow>
+                                        {groupItems.map((h, i) => (
+                                            <Fragment key={h.id}>
+                                                {i > 0 && <HabPlus $type={ownType}>+</HabPlus>}
+                                                <HabChip $type={ownType}>{h.codigo}</HabChip>
+                                            </Fragment>
+                                        ))}
+                                    </HabChipRow>
+                                    <HabDesc $type={ownType}>{desc}</HabDesc>
+                                </HabGroup>
+                            );
+                        })}
+                    </HabBlock>
+                );
+            }
             case "situacao":
                 return proposal.situacao;
             case "tecnico":
@@ -268,12 +338,7 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                     />
                 )}
 
-                <TableExport
-                    headers={headerItens}
-                    columns={columns}
-                    data={filteredProposals}
-                    filename={title}
-                />
+                <TableExport headers={headerItens} columns={columns} data={filteredProposals} filename={title} />
             </Header>
 
             <CustomTable>

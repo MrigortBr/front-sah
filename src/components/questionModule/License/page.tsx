@@ -7,21 +7,24 @@ import {
     CardSubTitle,
     CardTitle,
     LicenseContainer,
-    LicenseItem,
     LicenseItem2,
     LicenseSubTitle,
     LicenseTitle,
     GroupCard,
     GroupCardBody,
     GroupCardCodes,
+    GroupCodeChip,
     GroupCardLabel,
     GroupCardType,
+    GroupCardFooter,
     GroupRemoveButton,
     AddGroupButton,
 } from "../styled";
 import { HabilitacaoExitingResponse, TypeHab } from "@/services/proposal/type";
-import { RefObject, forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { RefObject, forwardRef, useEffect, useImperativeHandle, useState, useCallback } from "react";
 import { findGroup, GROUP_COLORS, sortCodes } from "@/const/habGroups";
+
+/* ── Types ─────────────────────────────────────────────────────── */
 
 export type TipoHabPayloadItem = { codigo: string; grupo: number };
 
@@ -29,6 +32,7 @@ export type LicenseData = {
     selectedLicenses: number[];
     selectedLicensesData: TypeHab[];
     tipohabilitacao: TipoHabPayloadItem[];
+    habilitacaoConjunta: { cnes: string; group_one: number }[];
     isValid: boolean;
 };
 
@@ -49,40 +53,50 @@ type PROP = {
     licenses: TypeHab[];
     response?: HabilitacaoExitingResponse;
     isReading?: boolean;
+    currentProposalId?: number;
+    onHabsChange?: (habs: TypeHab[]) => void;
 };
 
-const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response, isReading }, ref) => {
+/* ── Component ──────────────────────────────────────────────────── */
+
+const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response, isReading, onHabsChange }, ref) => {
     const [groups, setGroups] = useState<GroupEntry[]>([]);
     const [activeSelection, setActiveSelection] = useState<string[]>([]);
-    const { callMessage } = useAlert();
 
+    const { callMessage } = useAlert();
     const codesInGroups = groups.flatMap((g) => g.codes);
 
+    // Notify parent when selected habs change
+    useEffect(() => {
+        if (!onHabsChange) return;
+        const allCodes = groups.flatMap((g) => g.codes);
+        onHabsChange(licenses.filter((l) => allCodes.includes(l.codigo)));
+    }, [groups, licenses]);
+
+    /* ── Seleção de chips ── */
+
     function toggleCode(code: string) {
-        if (isReading) return;
-        if (codesInGroups.includes(code)) return;
+        if (isReading || codesInGroups.includes(code)) return;
         setActiveSelection((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
     }
 
     function handleAddGroup() {
-        if (activeSelection.length === 0) return;
-
+        if (!activeSelection.length) return;
         const match = findGroup(activeSelection);
-
         if (!match) {
-            callMessage(`Combinação inválida: ${sortCodes(activeSelection).join(" + ")}. Consulte a tabela de agrupamentos permitidos.`, "error");
+            callMessage(`Combinação inválida: ${sortCodes(activeSelection).join(" + ")}. Consulte a tabela de agrupamentos.`, "error");
             return;
         }
-
-        const newGroup: GroupEntry = {
-            id: crypto.randomUUID(),
-            codes: sortCodes(activeSelection),
-            label: match.label,
-            type: match.type,
-            colorIndex: groups.length % GROUP_COLORS.length,
-        };
-
-        setGroups((prev) => [...prev, newGroup]);
+        setGroups((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                codes: sortCodes(activeSelection),
+                label: match.label,
+                type: match.type,
+                colorIndex: prev.length % GROUP_COLORS.length,
+            },
+        ]);
         setActiveSelection([]);
     }
 
@@ -90,26 +104,36 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
         setGroups((prev) => prev.filter((g) => g.id !== id));
     }
 
+    /* ── getData ── */
+
     function getData(): LicenseData | undefined {
-        if (groups.length === 0) {
+        if (!groups.length) {
             callMessage("Adicione ao menos um grupo de habilitação", "info");
             return undefined;
         }
 
         let multiGroupCounter = 0;
-        const tipohabilitacao: TipoHabPayloadItem[] = groups.flatMap((g) => {
+        const tipohabilitacao: TipoHabPayloadItem[] = [];
+
+        for (const g of groups) {
             const grupoId = g.codes.length > 1 ? ++multiGroupCounter : 0;
-            return g.codes.map((codigo) => ({ codigo, grupo: grupoId }));
-        });
+            for (const codigo of g.codes) tipohabilitacao.push({ codigo, grupo: grupoId });
+        }
 
         const allCodes = groups.flatMap((g) => g.codes);
         const selectedLicensesData = licenses.filter((l) => allCodes.includes(l.codigo));
-        const selectedLicenses = selectedLicensesData.map((l) => l.id_tipo_habilitacao);
-
-        return { selectedLicenses, selectedLicensesData, tipohabilitacao, isValid: true };
+        return {
+            selectedLicenses: selectedLicensesData.map((l) => l.id_tipo_habilitacao),
+            selectedLicensesData,
+            tipohabilitacao,
+            habilitacaoConjunta: [],
+            isValid: true,
+        };
     }
 
     useImperativeHandle(ref, () => ({ getData }));
+
+    /* ── Carregar ao editar ── */
 
     useEffect(() => {
         if (!response || !licenses.length) return;
@@ -158,6 +182,8 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
     const selectionMatch = activeSelection.length > 0 ? findGroup(activeSelection) : undefined;
     const isSelectionValid = !!selectionMatch;
 
+    /* ── Render ── */
+
     return (
         <Card ref={refContainer}>
             <CardHeader>
@@ -166,24 +192,31 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
                     Selecione os código(s) e clique em <strong>Adicionar grupo</strong>. Múltiplos grupos são permitidos.
                 </CardSubTitle>
 
-                {/* ── Chips de seleção ── */}
+                {/* ── Chips ── */}
                 <LicenseContainer>
                     <LicenseTitle>
                         Código(s) de habilitação <a>*</a>
                     </LicenseTitle>
-                    <LicenseSubTitle>Clique nos códigos para montar um grupo — depois clique em &quot;Adicionar grupo&quot;</LicenseSubTitle>
+                    <LicenseSubTitle>
+                        Clique nos códigos para montar um grupo e depois clique em &quot;Adicionar grupo&quot;.
+                    </LicenseSubTitle>
 
                     {licenses.map((l) => {
                         const inGroup = codesInGroups.includes(l.codigo);
                         const selected = activeSelection.includes(l.codigo);
                         return (
-                            <LicenseItem2 key={l.id_tipo_habilitacao} $selected={selected} $inGroup={inGroup} onClick={() => toggleCode(l.codigo)}>
+                            <LicenseItem2
+                                key={l.id_tipo_habilitacao}
+                                $selected={selected}
+                                $inGroup={inGroup}
+                                onClick={() => toggleCode(l.codigo)}
+                            >
                                 {l.codigo}
                             </LicenseItem2>
                         );
                     })}
 
-                    {activeSelection.length > 0 ? (
+                    {activeSelection.length > 0 && (
                         <LicenseSubTitle style={{ marginTop: 2, width: "100%" }}>
                             Selecionados: <strong>{sortCodes(activeSelection).join(" + ")}</strong>
                             {" — "}
@@ -193,36 +226,61 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
                                 <span style={{ color: "#C62828" }}>✗ Combinação ainda inválida</span>
                             )}
                         </LicenseSubTitle>
-                    ) : (
-                        <span style={{ width: "100%" }}></span>
                     )}
 
-                    <AddGroupButton $disabled={!isSelectionValid} onClick={handleAddGroup} disabled={!isSelectionValid}>
+                    <AddGroupButton
+                        $disabled={!isSelectionValid}
+                        onClick={handleAddGroup}
+                        disabled={!isSelectionValid}
+                    >
                         + Adicionar grupo
                     </AddGroupButton>
                 </LicenseContainer>
 
-                {/* ── Grupos criados ── */}
+                {/* ── Grupos ── */}
                 {groups.length > 0 && (
                     <LicenseContainer>
                         <LicenseTitle>Grupos de habilitação:</LicenseTitle>
 
                         {groups.map((group) => {
                             const color = GROUP_COLORS[group.colorIndex];
+
                             return (
-                                <GroupCard key={group.id} $bg={color.bg} $border={color.border}>
+                                <GroupCard
+                                    key={group.id}
+                                    $bg={color.bg}
+                                    $border={color.border}
+                                    style={{ width: 220, minWidth: 180 }}
+                                >
                                     <GroupCardBody>
-                                        <GroupCardCodes $color={color.text}>{group.codes.join(" e ")}</GroupCardCodes>
+                                        <GroupCardCodes>
+                                            {group.codes.map((c) => (
+                                                <GroupCodeChip
+                                                    key={c}
+                                                    $color={color.text}
+                                                    $bg={color.bg}
+                                                    $border={color.border}
+                                                >
+                                                    {c}
+                                                </GroupCodeChip>
+                                            ))}
+                                        </GroupCardCodes>
                                         <GroupCardLabel>{group.label}</GroupCardLabel>
-                                        <GroupCardType $color={color.border}>
-                                            {group.type === "conjunta" ? "Habilitação conjunta" : "Mesmo estabelecimento"}
+                                        <GroupCardType $color={color.border} $bg={color.bg}>
+                                            {group.type === "conjunta" ? "🔗 Conjunta" : "🏥 Próprio"}
                                         </GroupCardType>
                                     </GroupCardBody>
 
                                     {!isReading && (
-                                        <GroupRemoveButton onClick={() => removeGroup(group.id)} title="Remover grupo">
-                                            ✕
-                                        </GroupRemoveButton>
+                                        <GroupCardFooter>
+                                            <GroupRemoveButton
+                                                onClick={() => removeGroup(group.id)}
+                                                title="Remover grupo"
+                                                style={{ fontSize: 12, padding: "2px 8px" }}
+                                            >
+                                                ✕ Remover
+                                            </GroupRemoveButton>
+                                        </GroupCardFooter>
                                     )}
                                 </GroupCard>
                             );
@@ -230,7 +288,7 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
                     </LicenseContainer>
                 )}
 
-                {groups.length === 0 && <CardSubTitle>Nenhum grupo adicionado ainda.</CardSubTitle>}
+                {!groups.length && <CardSubTitle>Nenhum grupo adicionado ainda.</CardSubTitle>}
             </CardHeader>
         </Card>
     );

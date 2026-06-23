@@ -1,4 +1,5 @@
 import { SimpleProposal } from "@/services/proposal/type";
+import { findGroup, sortCodes } from "@/const/habGroups";
 
 export type ColumnKey =
     | "nome_estabelecimento"
@@ -20,8 +21,23 @@ export function getExportValue(proposal: SimpleProposal, column: ColumnKey): str
             return proposal.nome_estabelecimento ?? "";
         case "uf_estabelecimento":
             return proposal.uf_estabelecimento ?? "";
-        case "tipohabilitacao":
-            return proposal.tipohabilitacao.map((t) => `${t.codigo} ${t.descricao}`).join(", ");
+        case "tipohabilitacao": {
+            const items = proposal.tipohabilitacao;
+            const soloItems = items.filter((t) => t.group === 0);
+            const multiMap = new Map<number, typeof items>();
+            for (const t of items.filter((t) => t.group !== 0)) {
+                if (!multiMap.has(t.group)) multiMap.set(t.group, []);
+                multiMap.get(t.group)!.push(t);
+            }
+            const parts: string[] = [];
+            for (const t of soloItems) parts.push(`${t.codigo} - ${t.descricao}`);
+            for (const [, group] of multiMap) {
+                const codes = sortCodes(group.map((t) => t.codigo));
+                const label = findGroup(codes)?.label ?? group.map((t) => t.descricao).join(" + ");
+                parts.push(`${codes.join(" + ")} - ${label}`);
+            }
+            return parts.join(" | ");
+        }
         case "situacao":
             return proposal.situacao ?? "";
         case "tecnico":

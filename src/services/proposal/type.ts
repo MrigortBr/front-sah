@@ -19,6 +19,12 @@ export interface SimpleProposal {
         categoria: string;
         group: number;
     }[];
+    conjunta?: {
+        id: number;
+        cnes: string;
+        nome_estabelecimento: string;
+        group_one: number;
+    }[];
 }
 
 export interface Response<T> {
@@ -100,5 +106,17 @@ export type HabilitacaoExitingResponse = {
         sequencia: string;
         anoAlteracao: number;
         codigos: string;
+    }[];
+
+    conjunta?: {
+        id: number;
+        cnes: string;
+        nome_estabelecimento: string;
+        group_one: number;
+    }[];
+
+    habEstabelecimentos?: {
+        cnes: string;
+        habIds: number[];
     }[];
 };

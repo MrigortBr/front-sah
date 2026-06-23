@@ -105,6 +105,26 @@ export default function ProposalComponent() {
 
                         <ProposalTable
                             noEdit={false}
+                            title={"Tabela de Testes"}
+                            color={2}
+                            proposals={proposals}
+                            search={true}
+                            headerItens={["SAIPS", "NUP", "Estabelecimento", "UF", "Habilitação soliticada", "Situação", "Técnico", "Entrada"]}
+                            columns={[
+                                "saips",
+                                "numero_unico_protoclo",
+                                "nome_estabelecimento",
+                                "uf_estabelecimento",
+                                "tipohabilitacao",
+                                "situacao",
+                                "tecnico",
+                                "inicio_saips",
+                            ]}
+                            situations={["Enviada ao MS"]}
+                        ></ProposalTable>
+
+                        <ProposalTable
+                            noEdit={false}
                             title={"Em análise / Em diligência"}
                             color={2}
                             proposals={proposals}

@@ -39,6 +39,16 @@ class ProposalService {
         }
     }
 
+    async getEstablishmentName(cnes: string): Promise<Response<{ cnes: string; nome_estabelecimento: string } | null>> {
+        try {
+            const response = await api.get<Response<{ cnes: string; nome_estabelecimento: string } | null>>(`/establishment/name/${cnes}`);
+            response.data.status = true;
+            return response.data;
+        } catch (err: Response<undefined> | unknown) {
+            return this.goCatch<{ cnes: string; nome_estabelecimento: string } | null>(err);
+        }
+    }
+
     async softDelete(id: number) {
         try {
             const response = await api.delete<Response<null>>(`/proposal/${id}`);

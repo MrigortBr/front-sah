@@ -236,3 +236,64 @@ export const PaginationInfo = styled.span`
     color: ${({ theme }) => theme.colors.gray};
     white-space: nowrap;
 `;
+
+export const HabBlock = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+`;
+
+export const HabGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+`;
+
+export const HabChipRow = styled.div`
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+`;
+
+export const HabChip = styled.span<{ $type: "solo" | "conj" }>`
+    display: inline-flex;
+    align-items: center;
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+
+    ${({ $type, theme }) =>
+        $type === "solo"
+            ? `
+        background: #F1F8E9;
+        color: #33691E;
+        border: 0.5px solid #AED581;
+    `
+            : `
+        background: #E3F2FD;
+        color: #0D47A1;
+        border: 0.5px solid #90CAF9;
+    `}
+`;
+
+export const HabPlus = styled.span<{ $type: "solo" | "conj" }>`
+    font-size: ${({ theme }) => theme.fontSizes.xxs};
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    color: ${({ $type }) => ($type === "conj" ? "#90CAF9" : "#AED581")};
+`;
+
+export const HabDesc = styled.span<{ $type: "solo" | "conj" }>`
+    font-size: ${({ theme }) => theme.fontSizes.xxs};
+    color: ${({ $type }) => ($type === "conj" ? "#1E88E5" : "#888")};
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 450px;
+    display: block;
+`;
