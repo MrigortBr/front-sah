@@ -103,7 +103,7 @@ export default function ProposalComponent() {
                     <>
                         <KpiCards data={baseProposals}></KpiCards>
 
-                        <ProposalTable
+                        {/* <ProposalTable
                             noEdit={false}
                             title={"Tabela de Testes"}
                             color={2}
@@ -121,7 +121,7 @@ export default function ProposalComponent() {
                                 "inicio_saips",
                             ]}
                             situations={["Enviada ao MS"]}
-                        ></ProposalTable>
+                        ></ProposalTable> */}
 
                         <ProposalTable
                             noEdit={false}
