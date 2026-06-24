@@ -19,13 +19,17 @@ export interface SimpleProposal {
         categoria: string;
         group: number;
     }[];
-    conjunta?: {
-        id: number;
-        cnes: string;
-        nome_estabelecimento: string;
-        group_one: number;
-    }[];
+    conjunta: CONJUNTA[];
 }
+
+export type CONJUNTA = {
+    id: number;
+    cnes: string;
+    nome_estabelecimento: string | null;
+    uf: string | null;
+    group_one: number;
+    habs: { id: number; codigo: string; descricao: string }[];
+};
 
 export interface Response<T> {
     data: T;

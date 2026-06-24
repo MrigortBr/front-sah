@@ -254,6 +254,7 @@ export const HabGroup = styled.div`
 export const HabChipRow = styled.div`
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 4px;
 `;
@@ -289,11 +290,8 @@ export const HabPlus = styled.span<{ $type: "solo" | "conj" }>`
 
 export const HabDesc = styled.span<{ $type: "solo" | "conj" }>`
     font-size: ${({ theme }) => theme.fontSizes.xxs};
-    color: ${({ $type }) => ($type === "conj" ? "#1E88E5" : "#888")};
-    line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 450px;
-    display: block;
+    color: ${({ theme }) => theme.colors.gray};
+    margin-top: 2px;
+    font-style: italic;
+    text-align: center;
 `;

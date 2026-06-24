@@ -1,6 +1,6 @@
 // page.tsx
 
-import { SimpleProposal } from "@/services/proposal/type";
+import { CONJUNTA, SimpleProposal } from "@/services/proposal/type";
 import { findGroup } from "@/const/habGroups";
 import {
     ClearFilterButton,
@@ -31,7 +31,7 @@ import {
     Title,
     TitleTwo,
 } from "./styled";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 import { Funnel } from "lucide-react";
@@ -98,7 +98,6 @@ const PAGE_SIZE = 5;
 
 export default function ProposalTable({ proposals, search = false, headerItens, columns, situations, title, color, noEdit, onClick }: PROP) {
     const [currentPage, setCurrentPage] = useState(1);
-    const { onlyReading } = useAuth();
     const router = useRouter();
     const [searchValue, setSearchValue] = useState("");
 
@@ -184,27 +183,39 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
         return result;
     }, [searchedProposals, situations, columnFilters]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredProposals.length / PAGE_SIZE));
+    // Expande para paginar corretamente (5 linhas/pág, contando clones)
+    const expandedRows = useMemo(() => {
+        const rows: { proposal: SimpleProposal; conjunta?: CONJUNTA }[] = [];
+        for (const p of filteredProposals) {
+            rows.push({ proposal: p });
+            for (const c of p.conjunta ?? []) {
+                rows.push({ proposal: p, conjunta: c });
+            }
+        }
+        return rows;
+    }, [filteredProposals]);
+
+    const totalPages = Math.max(1, Math.ceil(expandedRows.length / PAGE_SIZE));
 
     const safePage = Math.min(currentPage, totalPages);
 
-    const visibleProposals = useMemo(() => {
+    const visibleRows = useMemo(() => {
         const start = (safePage - 1) * PAGE_SIZE;
-        return filteredProposals.slice(start, start + PAGE_SIZE);
-    }, [filteredProposals, safePage]);
+        return expandedRows.slice(start, start + PAGE_SIZE);
+    }, [expandedRows, safePage]);
 
-    function renderColumn(proposal: SimpleProposal, column: ColumnKey) {
+    function renderColumn(proposal: SimpleProposal, column: ColumnKey, conjunta?: CONJUNTA) {
         switch (column) {
             case "nome_estabelecimento":
                 return (
                     <MultiText>
-                        <p>{proposal.nome_estabelecimento}</p>
-                        <a>CNES: {proposal.cnes_estabelecimento}</a>
+                        <p>{conjunta ? conjunta.nome_estabelecimento : proposal.nome_estabelecimento}</p>
+                        <a>CNES: {conjunta ? conjunta.cnes : proposal.cnes_estabelecimento}</a>
                     </MultiText>
                 );
 
             case "uf_estabelecimento":
-                return proposal.uf_estabelecimento;
+                return conjunta ? conjunta.uf : proposal.uf_estabelecimento;
             case "tipohabilitacao": {
                 const items = proposal.tipohabilitacao;
                 const conjuntaRecords = proposal.conjunta ?? [];
@@ -251,7 +262,7 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                             const ownType: "conj" | "solo" = hasConjunta || isMulti ? "conj" : "solo";
                             const codes = groupItems.map((h) => h.codigo);
                             const groupMatch = isMulti ? findGroup(codes) : null;
-                            const desc = groupMatch ? groupMatch.label : groupItems[0]?.descricao ?? "";
+                            const desc = groupMatch ? groupMatch.label : (groupItems[0]?.descricao ?? "");
 
                             return (
                                 <HabGroup key={key}>
@@ -342,7 +353,7 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
             </Header>
 
             <CustomTable>
-                <CustomTableThead hidden={visibleProposals.length == 0}>
+                <CustomTableThead hidden={visibleRows.length == 0}>
                     <CustomTableTR $cursor={""}>
                         {headerItens.map((hi, idx) => {
                             const column = columns[idx];
@@ -410,18 +421,24 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                 </CustomTableThead>
 
                 <CustomTableTbody>
-                    {visibleProposals.map((p, idx) => (
-                        <CustomTableTR key={idx} onClick={() => handleClick(p)} $cursor={onClick || !noEdit ? "pointer" : ""}>
+                    {visibleRows.map(({ proposal, conjunta }, idx) => (
+                        <CustomTableTR
+                            key={idx}
+                            onClick={() => handleClick(proposal)}
+                            $cursor={onClick || !noEdit ? "pointer" : ""}
+                            style={
+                                conjunta || proposal.conjunta.length > 0 ? { backgroundColor: "#F3F8FF", borderLeft: "3px solid #90CAF9" } : undefined
+                            }
+                        >
                             {columns.map((column, cidx) => (
-                                <CustomTableTD key={cidx}>{renderColumn(p, column)}</CustomTableTD>
+                                <CustomTableTD key={cidx}>{renderColumn(proposal, column, conjunta)}</CustomTableTD>
                             ))}
-                            {/* {noEdit ? <></> : onlyReading ? <></> : <CustomTableTDEdit onClick={() => handleClickEdit(p)}>Editar</CustomTableTDEdit>} */}
                         </CustomTableTR>
                     ))}
                 </CustomTableTbody>
             </CustomTable>
 
-            {visibleProposals.length === 0 ? (
+            {visibleRows.length === 0 ? (
                 <Header>
                     <TitleTwo>Sem Dados</TitleTwo>
                 </Header>

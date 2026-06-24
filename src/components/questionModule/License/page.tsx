@@ -22,7 +22,7 @@ import {
 } from "../styled";
 import { HabilitacaoExitingResponse, TypeHab } from "@/services/proposal/type";
 import { RefObject, forwardRef, useEffect, useImperativeHandle, useState, useCallback } from "react";
-import { findGroup, GROUP_COLORS, sortCodes } from "@/const/habGroups";
+import { findGroup, GROUP_COLORS, HAB_GROUPS, sortCodes } from "@/const/habGroups";
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -68,6 +68,15 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
 
     // Notify parent when selected habs change
     useEffect(() => {
+        console.log(licenses);
+        licenses.map((l) => {
+            HAB_GROUPS.push({
+                codes: [l.codigo],
+                label: l.categoria,
+                type: "individual",
+            });
+        });
+
         if (!onHabsChange) return;
         const allCodes = groups.flatMap((g) => g.codes);
         onHabsChange(licenses.filter((l) => allCodes.includes(l.codigo)));
@@ -197,20 +206,13 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
                     <LicenseTitle>
                         Código(s) de habilitação <a>*</a>
                     </LicenseTitle>
-                    <LicenseSubTitle>
-                        Clique nos códigos para montar um grupo e depois clique em &quot;Adicionar grupo&quot;.
-                    </LicenseSubTitle>
+                    <LicenseSubTitle>Clique nos códigos para montar um grupo e depois clique em &quot;Adicionar grupo&quot;.</LicenseSubTitle>
 
                     {licenses.map((l) => {
                         const inGroup = codesInGroups.includes(l.codigo);
                         const selected = activeSelection.includes(l.codigo);
                         return (
-                            <LicenseItem2
-                                key={l.id_tipo_habilitacao}
-                                $selected={selected}
-                                $inGroup={inGroup}
-                                onClick={() => toggleCode(l.codigo)}
-                            >
+                            <LicenseItem2 key={l.id_tipo_habilitacao} $selected={selected} $inGroup={inGroup} onClick={() => toggleCode(l.codigo)}>
                                 {l.codigo}
                             </LicenseItem2>
                         );
@@ -228,11 +230,10 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
                         </LicenseSubTitle>
                     )}
 
-                    <AddGroupButton
-                        $disabled={!isSelectionValid}
-                        onClick={handleAddGroup}
-                        disabled={!isSelectionValid}
-                    >
+                    {/* NOT REMOVE, SPACE */}
+                    <span style={{ width: "100%" }}></span>
+
+                    <AddGroupButton $disabled={!isSelectionValid} onClick={handleAddGroup} disabled={!isSelectionValid}>
                         + Adicionar grupo
                     </AddGroupButton>
                 </LicenseContainer>
@@ -246,21 +247,11 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
                             const color = GROUP_COLORS[group.colorIndex];
 
                             return (
-                                <GroupCard
-                                    key={group.id}
-                                    $bg={color.bg}
-                                    $border={color.border}
-                                    style={{ width: 220, minWidth: 180 }}
-                                >
+                                <GroupCard key={group.id} $bg={color.bg} $border={color.border} style={{ width: 220, minWidth: 180 }}>
                                     <GroupCardBody>
                                         <GroupCardCodes>
                                             {group.codes.map((c) => (
-                                                <GroupCodeChip
-                                                    key={c}
-                                                    $color={color.text}
-                                                    $bg={color.bg}
-                                                    $border={color.border}
-                                                >
+                                                <GroupCodeChip key={c} $color={color.text} $bg={color.bg} $border={color.border}>
                                                     {c}
                                                 </GroupCodeChip>
                                             ))}
