@@ -15,7 +15,7 @@ export default function Footer() {
         <FooterContainer>
             <FooterLeft>© 2026 SAH - Sistema de Acompanhamento de Habilitações</FooterLeft>
             <FooterRight>
-                <ImageWrapper>
+                {/* <ImageWrapper>
                     <Image src="/especialistas.png" fill alt="Agora tem especialistas" style={{ objectFit: "contain" }} />
                 </ImageWrapper>
                 <ImageWrapper>
@@ -23,7 +23,7 @@ export default function Footer() {
                 </ImageWrapper>
                 <ImageWrapper>
                     <Image src="/gov.jpeg" fill alt="Governo Federal" style={{ objectFit: "contain" }} />
-                </ImageWrapper>
+                </ImageWrapper> */}
             </FooterRight>
         </FooterContainer>
     );
