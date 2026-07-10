@@ -24,6 +24,7 @@ import { LoadingContainer } from "../module/styled";
 
 const NAV_PAGES = [
     { label: "Ativos", href: "/ativos" },
+    { label: "Mapa", href: "/mapa" },
     { label: "Módulos", href: "/modulos" },
     { label: "Propostas", href: "/propostas" },
 ];
