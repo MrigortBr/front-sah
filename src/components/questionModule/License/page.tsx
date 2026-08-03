@@ -37,7 +37,7 @@ export type LicenseData = {
 };
 
 export type LicenseRef = {
-    getData: () => LicenseData | undefined;
+    getData: (force?: boolean) => LicenseData | undefined;
 };
 
 type GroupEntry = {
@@ -115,10 +115,13 @@ const License = forwardRef<LicenseRef, PROP>(({ refContainer, licenses, response
 
     /* ── getData ── */
 
-    function getData(): LicenseData | undefined {
-        if (!groups.length) {
+    function getData(force?: boolean): LicenseData | undefined {
+        if (!groups.length && !force) {
             callMessage("Adicione ao menos um grupo de habilitação", "info");
             return undefined;
+        }
+        if (!groups.length && force) {
+            return { selectedLicenses: [], selectedLicensesData: [], tipohabilitacao: [], habilitacaoConjunta: [], isValid: false };
         }
 
         let multiGroupCounter = 0;

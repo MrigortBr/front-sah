@@ -38,7 +38,7 @@ export type ProcessIdentificationData = {
 };
 
 export type ProcessIdentificationRef = {
-    getData: () => ProcessIdentificationData | undefined;
+    getData: (force?: boolean) => ProcessIdentificationData | undefined;
 };
 
 type PROP = {
@@ -125,8 +125,8 @@ const ProcessIdentification = forwardRef<ProcessIdentificationRef, PROP>(({ refC
         setSelectedDiligence(formatted.selectedDiligence);
     }, [response]);
 
-    function getData(): ProcessIdentificationData | undefined {
-        if (isValid || isReading) {
+    function getData(force?: boolean): ProcessIdentificationData | undefined {
+        if (isValid || isReading || force) {
             return {
                 saips,
                 nup,

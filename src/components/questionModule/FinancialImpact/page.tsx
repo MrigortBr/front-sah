@@ -15,7 +15,7 @@ type FinancialImpactData = {
 };
 
 export type FinancialImpactRef = {
-    getData: () => FinancialImpactData | undefined;
+    getData: (force?: boolean) => FinancialImpactData | undefined;
 };
 
 type PROP = {
@@ -116,8 +116,8 @@ const FinancialImpact = forwardRef<FinancialImpactRef, PROP>(({ refContainer, re
         setParcelaUnica(formatted.parcelaUnica);
     }, [response]);
 
-    function getData(): FinancialImpactData | undefined {
-        if (isValid) {
+    function getData(force?: boolean): FinancialImpactData | undefined {
+        if (isValid || force) {
             return {
                 impactMensal,
                 impactAnual,

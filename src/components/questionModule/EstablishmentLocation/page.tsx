@@ -86,7 +86,7 @@ export type EstablishmentLocationData = {
 };
 
 export type EstablishmentLocationRef = {
-    getData: () => EstablishmentLocationData | undefined;
+    getData: (force?: boolean) => EstablishmentLocationData | undefined;
 };
 
 type PROP = {
@@ -254,9 +254,9 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(
 
         /* ── getData ── */
 
-        function getData(): EstablishmentLocationData | undefined {
+        function getData(force?: boolean): EstablishmentLocationData | undefined {
             const first = estabs[0];
-            if (!first.isValid) {
+            if (!first.isValid && !force) {
                 callMessage("Preencha um CNES válido no primeiro estabelecimento", "info");
                 return undefined;
             }

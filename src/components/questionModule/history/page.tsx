@@ -30,7 +30,7 @@ export type HistoryData = {
 };
 
 export type HistoryRef = {
-    getData: () => HistoryData | undefined;
+    getData: (force?: boolean) => HistoryData | undefined;
 };
 
 type PROP = {
@@ -90,8 +90,8 @@ const History = forwardRef<HistoryRef, PROP>(({ refContainer, response, isReadin
         setIsValid(hasValidItems);
     }, [historyList]);
 
-    function getData(): HistoryData | undefined {
-        if (isValid) {
+    function getData(force?: boolean): HistoryData | undefined {
+        if (isValid || force) {
             return {
                 historyList: historyList.filter((item) => item.year.trim() !== "" || item.code.trim() !== ""),
                 isValid,
