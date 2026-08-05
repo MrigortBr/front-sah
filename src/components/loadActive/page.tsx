@@ -4,7 +4,10 @@ import SidebarNewProposal from "../filterLeftNewProposal/page";
 import ProcessIdentification, { ProcessIdentificationRef } from "../questionModule/processIdentification/page";
 import {
     ConfirmActions, ConfirmCancel, ConfirmCard, ConfirmOverlay,
-    ConfirmProceed, ConfirmText, ConfirmTitle, Container, Questions,
+    ConfirmProceed, ConfirmText, ConfirmTitle, Container, ContentArea, Questions,
+    HistoricoSection, HistoricoSectionTitle, HistoricoRow, HistoricoInfo,
+    HistoricoLabel, HistoricoValue, HistoricoCodigosList, HistoricoCodigoBadge,
+    HistoricoVerBtn, HistoricoEmpty, HistoricoBanner,
 } from "./styled";
 import FinancialImpact, { FinancialImpactRef } from "../questionModule/FinancialImpact/page";
 import EstablishmentLocation, { EstablishmentLocationRef } from "../questionModule/EstablishmentLocation/page";
@@ -29,6 +32,10 @@ export default function NewProposalActive() {
     const [dataForm, setDataForm] = useState<HabilitacaoExitingResponse>();
     const [selectedHabs, setSelectedHabs] = useState<TypeHab[]>([]);
     const [availableEstabs, setAvailableEstabs] = useState<EstabInfo[]>([]);
+
+    type HistoricoHab = { id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] };
+    const [historicos, setHistoricos] = useState<HistoricoHab[]>([]);
+    const [activeHabId, setActiveHabId] = useState<number | null>(null);
 
     const refContainer = useRef<HTMLDivElement | null>(null);
 
@@ -82,6 +89,23 @@ export default function NewProposalActive() {
             setDataForm(response.data);
             callMessage(response.message, "success");
             setIsLoading(false);
+
+            // Fetch historical habilitações for the same CNES
+            const cnes = response.data?.cnes;
+            if (cnes) {
+                const histRes = await proposalService.getHistoricosByCnes(cnes);
+                if (histRes.status && Array.isArray(histRes.data)) {
+                    setHistoricos(histRes.data);
+                }
+
+                // If this record is itself historical, find the current active to link the banner
+                if (response.data?.situacao === "Histórico") {
+                    const activeRes = await proposalService.getActiveByCnes(cnes);
+                    if (activeRes.status && activeRes.data) {
+                        setActiveHabId(activeRes.data.id);
+                    }
+                }
+            }
         };
 
         load();
@@ -113,7 +137,7 @@ export default function NewProposalActive() {
             inicio_saips:           processData.dateSaips ? new Date(processData.dateSaips).toISOString() : "",
             entrada_decan:          processData.dateDecan ? new Date(processData.dateDecan).toISOString() : "",
             envio_drac:             processData.dateDrac  ? new Date(processData.dateDrac).toISOString()  : "",
-            inpacto_mensal:         Number(financialData.impactAnual.replace(/\./g, "").replace(",", ".")),
+            inpacto_mensal:         Number(financialData.impactMensal.replace(/\./g, "").replace(",", ".")),
             parcela_unica:          Number(financialData.parcelaUnica.replace(/\./g, "").replace(",", ".")),
             cnes:                   establishmentData.cnes,
             numero_aceleradores:    Number(establishmentData.accelerators),
@@ -179,6 +203,16 @@ export default function NewProposalActive() {
                 refs={[sectionRef, sectionRef2, sectionRef3, sectionRef4, sectionRef5, sectionRef6]}
                 refContainer={refContainer}
             />
+            <ContentArea>
+            {dataForm?.situacao === "Histórico" && (
+                <HistoricoBanner
+                    onClick={() => activeHabId && window.open(`/ativos/ler?id=${activeHabId}`, "_blank")}
+                    style={{ cursor: activeHabId ? "pointer" : "default" }}
+                >
+                    🗂️ Você está visualizando uma HABILITAÇÃO HISTÓRICA
+                    {activeHabId ? " — clique aqui para abrir a versão mais atual" : " — versão ativa não encontrada"}
+                </HistoricoBanner>
+            )}
             <Questions ref={refContainer}>
                 <ProcessIdentification
                     refContainer={sectionRef}
@@ -211,8 +245,57 @@ export default function NewProposalActive() {
                     onHabsChange={setSelectedHabs}
                 />
                 <History response={dataForm} refContainer={sectionRef6} ref={historyRef} />
-                <FooterNewProposal generate={generatePayload} load={isSending} />
+
+                {/* ── Habilitações Anteriores: apenas registros do sistema (situacao=Histórico) ── */}
+                {(() => {
+                    const all = historicos.filter((h) => h.id !== dataForm?.id_habilitacao).map((h) => ({
+                        key: `sys-${h.id}`,
+                        label: `${h.numeroSaips || "—"} · ${h.inicioSaips ? new Date(h.inicioSaips).getFullYear() : "—"}`,
+                        codigos: h.codigos,
+                        habId: h.id,
+                    }));
+                    const total = all.length;
+
+                    return (
+                        <HistoricoSection>
+                            <HistoricoSectionTitle>📋 Habilitações Anteriores ({total})</HistoricoSectionTitle>
+                            {total === 0 ? (
+                                <HistoricoEmpty>Nenhuma habilitação anterior encontrada para este CNES.</HistoricoEmpty>
+                            ) : (
+                                all.map((entry) => (
+                                    <HistoricoRow key={entry.key}>
+                                        <HistoricoInfo>
+                                            <HistoricoLabel>SAIPS / Ano</HistoricoLabel>
+                                            <HistoricoValue>{entry.label}</HistoricoValue>
+                                        </HistoricoInfo>
+                                        <HistoricoInfo>
+                                            <HistoricoLabel>Códigos</HistoricoLabel>
+                                            <HistoricoCodigosList>
+                                                {entry.codigos.length > 0
+                                                    ? entry.codigos.map((c) => (
+                                                          <HistoricoCodigoBadge key={c}>{c}</HistoricoCodigoBadge>
+                                                      ))
+                                                    : <HistoricoLabel>Sem códigos</HistoricoLabel>
+                                                }
+                                            </HistoricoCodigosList>
+                                        </HistoricoInfo>
+                                        <HistoricoVerBtn
+                                            onClick={() => window.open(`/ativos/ler?id=${entry.habId}`, "_blank")}
+                                        >
+                                            Ver completo
+                                        </HistoricoVerBtn>
+                                    </HistoricoRow>
+                                ))
+                            )}
+                        </HistoricoSection>
+                    );
+                })()}
+
+                {dataForm?.situacao !== "Histórico" && (
+                    <FooterNewProposal generate={generatePayload} load={isSending} />
+                )}
             </Questions>
+            </ContentArea>
 
             {showConfirm && (
                 <ConfirmOverlay>

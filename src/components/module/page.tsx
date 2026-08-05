@@ -42,7 +42,7 @@ export default function Page() {
                     await logout();
                 }, 1800);
             }
-            setCount(response.data.filter((v) => v.situacao !== "Proposta concluída").length);
+            setCount(response.data.filter((v) => v.situacao !== "Proposta concluída" && v.situacao !== "Histórico").length);
             setCountActive(response.data.filter((v) => v.situacao === "Proposta concluída").length);
             setLoading(false);
         };

@@ -23,7 +23,7 @@ import {
 } from "../styled";
 
 import { establishmentService } from "@/services/establishment/page";
-import { RefObject, forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { RefObject, forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { HabilitacaoExitingResponse } from "@/services/proposal/type";
 import { EstabInfo } from "../EstablishmentHabLink/page";
 
@@ -95,6 +95,7 @@ type PROP = {
     response?: HabilitacaoExitingResponse;
     isReading?: boolean;
     onEstabsChange?: (estabs: EstabInfo[]) => void;
+    onCnesValidated?: (cnes: string) => void;
 };
 
 /* ── Helpers ──────────────────────────────────────────────── */
@@ -146,14 +147,18 @@ function formatMoney(value: string) {
 /* ── Component ────────────────────────────────────────────── */
 
 const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(
-    ({ refContainer, subRef, response, isReading, onEstabsChange }, ref) => {
+    ({ refContainer, subRef, response, isReading, onEstabsChange, onCnesValidated }, ref) => {
         const [estabs, setEstabs] = useState<EstabItem[]>(() => [createEmptyEstab()]);
         const [activeId, setActiveId] = useState<string>("");
 
+        // Ref to the first estab's id — always current, no stale-closure risk
+        const firstEstabIdRef = useRef<string>(estabs[0]?.id ?? "");
+
         const { callMessage } = useAlert();
 
-        // Keep activeId valid when tabs change
+        // Keep activeId valid when tabs change; also update firstEstabIdRef
         useEffect(() => {
+            firstEstabIdRef.current = estabs[0]?.id ?? "";
             if (estabs.length > 0 && (!activeId || !estabs.find((e) => e.id === activeId))) {
                 setActiveId(estabs[0].id);
             }
@@ -226,6 +231,12 @@ const EstablishmentLocation = forwardRef<EstablishmentLocationRef, PROP>(
                     ) ?? 0,
                 isValid: true,
             });
+
+            // Notifica o pai apenas se for o primeiro estabelecimento
+            // Usa ref para evitar stale closure — sempre reflete o id atual do primeiro tab
+            if (firstEstabIdRef.current === id) {
+                onCnesValidated?.(cnes);
+            }
         }
 
         // Trigger fetch only when cnes hits 7 digits and data isn't loaded yet

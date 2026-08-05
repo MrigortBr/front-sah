@@ -12,6 +12,7 @@ export const statusMock = [
     "Enviada ao DRAC",
     "Proposta excluída",
     "Proposta concluída",
+    "Histórico",
 ];
 
 export const typeFin = ["MAC", "FAEC", "MAC E FAEC", "Não há ônus para o MS"];

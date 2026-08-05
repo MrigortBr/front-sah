@@ -2,7 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import SidebarNewProposal from "../filterLeftNewProposal/page";
 import ProcessIdentification, { ProcessIdentificationRef } from "../questionModule/processIdentification/page";
-import { Container, Questions } from "./styled";
+import {
+    Container, InheritActions, InheritCancel, InheritCard, InheritCode,
+    InheritCodes, InheritConfirm, InheritOverlay, InheritSubtitle, InheritTitle, Questions,
+} from "./styled";
 import FinancialImpact, { FinancialImpactRef } from "../questionModule/FinancialImpact/page";
 import EstablishmentLocation, { EstablishmentLocationRef } from "../questionModule/EstablishmentLocation/page";
 import License, { LicenseRef } from "../questionModule/License/page";
@@ -26,6 +29,8 @@ export default function NewProposalActive() {
     const [dataForm, setDataForm] = useState<HabilitacaoExitingResponse>();
     const [selectedHabs, setSelectedHabs] = useState<TypeHab[]>([]);
     const [availableEstabs, setAvailableEstabs] = useState<EstabInfo[]>([]);
+    const [activeInfo, setActiveInfo] = useState<{ id: number; codigos: string[] } | null>(null);
+    const [showInheritModal, setShowInheritModal] = useState(false);
 
     const refContainer = useRef<HTMLDivElement | null>(null);
 
@@ -85,6 +90,29 @@ export default function NewProposalActive() {
         if (id !== 0) loadForm(id);
     }, []);
 
+    // Chamado quando o CNES primário é validado — verifica se já existe habilitação ativa
+    async function onCnesValidated(cnes: string) {
+        // Só verifica em modo criação (sem proposal carregada) e sem herança já ativa
+        if (dataForm) return;
+        const res = await proposalService.getActiveByCnes(cnes);
+        if (res.status && res.data) {
+            setActiveInfo(res.data);
+            setShowInheritModal(true);
+        }
+    }
+
+    // Usuário confirmou herdar dados da habilitação ativa encontrada
+    async function handleInheritConfirm() {
+        if (!activeInfo) return;
+        setShowInheritModal(false);
+        setIsLoading(true);
+        const res = await proposalService.getProposalDataForForm(activeInfo.id);
+        setIsLoading(false);
+        if (res.status) {
+            setDataForm(res.data);
+        }
+    }
+
     if (isLoading) return <Loading />;
 
     async function generatePayload() {
@@ -111,7 +139,7 @@ export default function NewProposalActive() {
             inicio_saips: processData.dateSaips ? new Date(processData.dateSaips).toISOString() : "",
             entrada_decan: processData.dateDecan ? new Date(processData.dateDecan).toISOString() : "",
             envio_drac: processData.dateDrac ? new Date(processData.dateDrac).toISOString() : "",
-            inpacto_mensal: Number(financialData.impactAnual.replace(/\./g, "").replace(",", ".")),
+            inpacto_mensal: Number(financialData.impactMensal.replace(/\./g, "").replace(",", ".")),
             parcela_unica: Number(financialData.parcelaUnica.replace(/\./g, "").replace(",", ".")),
             cnes: establishmentData.cnes,
             numero_aceleradores: Number(establishmentData.accelerators),
@@ -181,6 +209,7 @@ export default function NewProposalActive() {
                     subRef={sectionRef4}
                     ref={establishmentRef}
                     onEstabsChange={setAvailableEstabs}
+                    onCnesValidated={onCnesValidated}
                 />
                 <EstablishmentHabLink
                     refContainer={habLinkRef}
@@ -200,6 +229,31 @@ export default function NewProposalActive() {
                 <History response={dataForm} refContainer={sectionRef6} ref={historyRef} />
                 <FooterNewProposal deleteProposal={deleteProposal} generate={generatePayload} load={isSending} />
             </Questions>
+
+            {showInheritModal && activeInfo && (
+                <InheritOverlay>
+                    <InheritCard>
+                        <InheritTitle>⚠️ Habilitação ativa encontrada</InheritTitle>
+                        <InheritSubtitle>
+                            Este CNES já possui uma habilitação ativa com os seguintes códigos.
+                            Deseja herdar os dados dela para este formulário?
+                        </InheritSubtitle>
+                        <InheritCodes>
+                            {activeInfo.codigos.map((c) => (
+                                <InheritCode key={c}>{c}</InheritCode>
+                            ))}
+                        </InheritCodes>
+                        <InheritActions>
+                            <InheritCancel onClick={() => setShowInheritModal(false)}>
+                                Não, começar do zero
+                            </InheritCancel>
+                            <InheritConfirm onClick={handleInheritConfirm}>
+                                Sim, herdar dados
+                            </InheritConfirm>
+                        </InheritActions>
+                    </InheritCard>
+                </InheritOverlay>
+            )}
         </Container>
     );
 }

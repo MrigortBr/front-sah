@@ -131,7 +131,7 @@ export default function NewProposal() {
 
             envio_drac: processData.dateDrac ? new Date(processData.dateDrac).toISOString() : "",
 
-            inpacto_mensal: Number(financialData.impactAnual.replace(/\./g, "").replace(",", ".")),
+            inpacto_mensal: Number(financialData.impactMensal.replace(/\./g, "").replace(",", ".")),
 
             parcela_unica: Number(financialData.parcelaUnica.replace(/\./g, "").replace(",", ".")),
 
