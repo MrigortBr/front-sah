@@ -8,6 +8,7 @@ import {
     HistoricoSection, HistoricoSectionTitle, HistoricoRow, HistoricoInfo,
     HistoricoLabel, HistoricoValue, HistoricoCodigosList, HistoricoCodigoBadge,
     HistoricoVerBtn, HistoricoEmpty, HistoricoBanner,
+    PropostaCodigoBadge, PropostaSituacaoBadge,
 } from "./styled";
 import FinancialImpact, { FinancialImpactRef } from "../questionModule/FinancialImpact/page";
 import EstablishmentLocation, { EstablishmentLocationRef } from "../questionModule/EstablishmentLocation/page";
@@ -35,6 +36,7 @@ export default function NewProposalActive() {
 
     type HistoricoHab = { id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] };
     const [historicos, setHistoricos] = useState<HistoricoHab[]>([]);
+    const [propostas, setPropostas] = useState<HistoricoHab[]>([]);
     const [activeHabId, setActiveHabId] = useState<number | null>(null);
 
     const refContainer = useRef<HTMLDivElement | null>(null);
@@ -90,20 +92,18 @@ export default function NewProposalActive() {
             callMessage(response.message, "success");
             setIsLoading(false);
 
-            // Fetch historical habilitações for the same CNES
+            // Fetch historical habilitações, proposals in progress, and (if historical) the active id
             const cnes = response.data?.cnes;
             if (cnes) {
-                const histRes = await proposalService.getHistoricosByCnes(cnes);
-                if (histRes.status && Array.isArray(histRes.data)) {
-                    setHistoricos(histRes.data);
-                }
-
-                // If this record is itself historical, find the current active to link the banner
-                if (response.data?.situacao === "Histórico") {
-                    const activeRes = await proposalService.getActiveByCnes(cnes);
-                    if (activeRes.status && activeRes.data) {
-                        setActiveHabId(activeRes.data.id);
-                    }
+                const [histRes, propRes, activeRes] = await Promise.all([
+                    proposalService.getHistoricosByCnes(cnes),
+                    proposalService.getProposalsByCnes(cnes),
+                    proposalService.getActiveByCnes(cnes),
+                ]);
+                if (histRes.status && Array.isArray(histRes.data)) setHistoricos(histRes.data);
+                if (propRes.status && Array.isArray(propRes.data)) setPropostas(propRes.data);
+                if (response.data?.situacao === "Histórico" && activeRes.status && activeRes.data) {
+                    setActiveHabId(activeRes.data.id);
                 }
             }
         };
@@ -290,6 +290,40 @@ export default function NewProposalActive() {
                         </HistoricoSection>
                     );
                 })()}
+
+                {propostas.length > 0 && (
+                    <HistoricoSection>
+                        <HistoricoSectionTitle>🗂️ Propostas em Andamento ({propostas.length})</HistoricoSectionTitle>
+                        {propostas.map((p) => (
+                            <HistoricoRow key={`prop-${p.id}`}>
+                                <HistoricoInfo>
+                                    <HistoricoLabel>SAIPS / Ano</HistoricoLabel>
+                                    <HistoricoValue>
+                                        {p.numeroSaips || "—"} · {p.inicioSaips ? new Date(p.inicioSaips).getFullYear() : "—"}
+                                    </HistoricoValue>
+                                </HistoricoInfo>
+                                <HistoricoInfo>
+                                    <HistoricoLabel>Situação</HistoricoLabel>
+                                    <PropostaSituacaoBadge>{p.situacao}</PropostaSituacaoBadge>
+                                </HistoricoInfo>
+                                <HistoricoInfo>
+                                    <HistoricoLabel>Códigos</HistoricoLabel>
+                                    <HistoricoCodigosList>
+                                        {p.codigos.length > 0
+                                            ? p.codigos.map((c) => <PropostaCodigoBadge key={c}>{c}</PropostaCodigoBadge>)
+                                            : <HistoricoLabel>Sem códigos</HistoricoLabel>
+                                        }
+                                    </HistoricoCodigosList>
+                                </HistoricoInfo>
+                                <HistoricoVerBtn
+                                    onClick={() => window.open(`/propostas/nova?id=${p.id}`, "_blank")}
+                                >
+                                    Ver proposta
+                                </HistoricoVerBtn>
+                            </HistoricoRow>
+                        ))}
+                    </HistoricoSection>
+                )}
 
                 {dataForm?.situacao !== "Histórico" && (
                     <FooterNewProposal generate={generatePayload} load={isSending} />

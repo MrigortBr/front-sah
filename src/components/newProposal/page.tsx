@@ -5,7 +5,14 @@ import ProcessIdentification, { ProcessIdentificationRef } from "../questionModu
 import {
     Container, InheritActions, InheritCancel, InheritCard, InheritCode,
     InheritCodes, InheritConfirm, InheritOverlay, InheritSubtitle, InheritTitle, Questions,
+    InheritDivider, InheritViewActiveBtn, InheritHistoricoList, InheritHistoricoRow,
+    InheritHistoricoLabel, InheritHistoricoBtn,
 } from "./styled";
+import {
+    HistoricoSection, HistoricoSectionTitle, HistoricoRow, HistoricoInfo,
+    HistoricoLabel, HistoricoValue, HistoricoCodigosList, HistoricoCodigoBadge,
+    HistoricoVerBtn, HistoricoEmpty,
+} from "../loadActive/styled";
 import FinancialImpact, { FinancialImpactRef } from "../questionModule/FinancialImpact/page";
 import EstablishmentLocation, { EstablishmentLocationRef } from "../questionModule/EstablishmentLocation/page";
 import License, { LicenseRef } from "../questionModule/License/page";
@@ -31,6 +38,9 @@ export default function NewProposalActive() {
     const [availableEstabs, setAvailableEstabs] = useState<EstabInfo[]>([]);
     const [activeInfo, setActiveInfo] = useState<{ id: number; codigos: string[] } | null>(null);
     const [showInheritModal, setShowInheritModal] = useState(false);
+
+    type HistoricoHab = { id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] };
+    const [historicos, setHistoricos] = useState<HistoricoHab[]>([]);
 
     const refContainer = useRef<HTMLDivElement | null>(null);
 
@@ -83,6 +93,16 @@ export default function NewProposalActive() {
             setDataForm(response.data);
             callMessage(response.message, "success");
             setIsLoading(false);
+
+            const cnes = response.data?.cnes;
+            if (cnes) {
+                const [histRes, activeRes] = await Promise.all([
+                    proposalService.getHistoricosByCnes(cnes),
+                    proposalService.getActiveByCnes(cnes),
+                ]);
+                if (histRes.status && Array.isArray(histRes.data)) setHistoricos(histRes.data);
+                if (activeRes.status && activeRes.data) setActiveInfo(activeRes.data);
+            }
         };
 
         load();
@@ -94,9 +114,15 @@ export default function NewProposalActive() {
     async function onCnesValidated(cnes: string) {
         // Só verifica em modo criação (sem proposal carregada) e sem herança já ativa
         if (dataForm) return;
-        const res = await proposalService.getActiveByCnes(cnes);
-        if (res.status && res.data) {
-            setActiveInfo(res.data);
+        const [activeRes, histRes] = await Promise.all([
+            proposalService.getActiveByCnes(cnes),
+            proposalService.getHistoricosByCnes(cnes),
+        ]);
+        if (histRes.status && Array.isArray(histRes.data)) {
+            setHistoricos(histRes.data);
+        }
+        if (activeRes.status && activeRes.data) {
+            setActiveInfo(activeRes.data);
             setShowInheritModal(true);
         }
     }
@@ -227,6 +253,72 @@ export default function NewProposalActive() {
                     onHabsChange={setSelectedHabs}
                 />
                 <History response={dataForm} refContainer={sectionRef6} ref={historyRef} />
+
+                {(activeInfo || historicos.length > 0) && (() => {
+                    const historicosFiltered = historicos.filter((h) => h.id !== dataForm?.id_habilitacao);
+                    const total = (activeInfo ? 1 : 0) + historicosFiltered.length;
+                    return (
+                        <HistoricoSection>
+                            <HistoricoSectionTitle>📋 Histórico de Habilitações ({total})</HistoricoSectionTitle>
+
+                            {/* Habilitação ativa */}
+                            {activeInfo && (
+                                <HistoricoRow key={`active-${activeInfo.id}`}>
+                                    <HistoricoInfo>
+                                        <HistoricoLabel>Situação</HistoricoLabel>
+                                        <HistoricoValue style={{ color: "#1b5e3b" }}>✅ Ativa</HistoricoValue>
+                                    </HistoricoInfo>
+                                    <HistoricoInfo>
+                                        <HistoricoLabel>Códigos</HistoricoLabel>
+                                        <HistoricoCodigosList>
+                                            {activeInfo.codigos.length > 0
+                                                ? activeInfo.codigos.map((c) => (
+                                                      <HistoricoCodigoBadge key={c} style={{ background: "#e8f5e9", color: "#1b5e3b" }}>{c}</HistoricoCodigoBadge>
+                                                  ))
+                                                : <HistoricoLabel>Sem códigos</HistoricoLabel>
+                                            }
+                                        </HistoricoCodigosList>
+                                    </HistoricoInfo>
+                                    <HistoricoVerBtn
+                                        style={{ background: "#1b5e3b" }}
+                                        onClick={() => window.open(`/ativos/ler?id=${activeInfo.id}`, "_blank")}
+                                    >
+                                        Ver ativa
+                                    </HistoricoVerBtn>
+                                </HistoricoRow>
+                            )}
+
+                            {/* Históricos */}
+                            {historicosFiltered.length === 0 && !activeInfo ? (
+                                <HistoricoEmpty>Nenhuma habilitação anterior encontrada para este CNES.</HistoricoEmpty>
+                            ) : (
+                                historicosFiltered.map((h) => (
+                                    <HistoricoRow key={`sys-${h.id}`}>
+                                        <HistoricoInfo>
+                                            <HistoricoLabel>SAIPS / Ano</HistoricoLabel>
+                                            <HistoricoValue>{h.numeroSaips || "—"} · {h.inicioSaips ? new Date(h.inicioSaips).getFullYear() : "—"}</HistoricoValue>
+                                        </HistoricoInfo>
+                                        <HistoricoInfo>
+                                            <HistoricoLabel>Códigos</HistoricoLabel>
+                                            <HistoricoCodigosList>
+                                                {h.codigos.length > 0
+                                                    ? h.codigos.map((c) => <HistoricoCodigoBadge key={c}>{c}</HistoricoCodigoBadge>)
+                                                    : <HistoricoLabel>Sem códigos</HistoricoLabel>
+                                                }
+                                            </HistoricoCodigosList>
+                                        </HistoricoInfo>
+                                        <HistoricoVerBtn
+                                            onClick={() => window.open(`/ativos/ler?id=${h.id}`, "_blank")}
+                                        >
+                                            Ver completo
+                                        </HistoricoVerBtn>
+                                    </HistoricoRow>
+                                ))
+                            )}
+                        </HistoricoSection>
+                    );
+                })()}
+
                 <FooterNewProposal deleteProposal={deleteProposal} generate={generatePayload} load={isSending} />
             </Questions>
 
@@ -243,6 +335,36 @@ export default function NewProposalActive() {
                                 <InheritCode key={c}>{c}</InheritCode>
                             ))}
                         </InheritCodes>
+
+                        <InheritViewActiveBtn
+                            onClick={() => window.open(`/ativos/ler?id=${activeInfo.id}`, "_blank")}
+                        >
+                            🔗 Ver habilitação ativa completa
+                        </InheritViewActiveBtn>
+
+                        {historicos.length > 0 && (
+                            <>
+                                <InheritDivider />
+                                <InheritSubtitle style={{ marginBottom: 8 }}>
+                                    📋 Habilitações anteriores ({historicos.length})
+                                </InheritSubtitle>
+                                <InheritHistoricoList>
+                                    {historicos.map((h) => (
+                                        <InheritHistoricoRow key={h.id}>
+                                            <InheritHistoricoLabel>
+                                                {h.numeroSaips || "—"} · {h.inicioSaips ? new Date(h.inicioSaips).getFullYear() : "—"}
+                                            </InheritHistoricoLabel>
+                                            <InheritHistoricoBtn
+                                                onClick={() => window.open(`/ativos/ler?id=${h.id}`, "_blank")}
+                                            >
+                                                Ver completo
+                                            </InheritHistoricoBtn>
+                                        </InheritHistoricoRow>
+                                    ))}
+                                </InheritHistoricoList>
+                            </>
+                        )}
+
                         <InheritActions>
                             <InheritCancel onClick={() => setShowInheritModal(false)}>
                                 Não, começar do zero

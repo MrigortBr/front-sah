@@ -163,6 +163,24 @@ export const HistoricoVerBtn = styled.button`
     &:hover { background: #283593; }
 `;
 
+export const PropostaCodigoBadge = styled.span`
+    background: #fff3e0;
+    color: #e65100;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+`;
+
+export const PropostaSituacaoBadge = styled.span`
+    background: #e3f2fd;
+    color: #1565c0;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+`;
+
 export const HistoricoEmpty = styled.p`
     font-size: 0.88rem;
     color: #aaa;

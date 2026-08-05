@@ -73,6 +73,16 @@ class ProposalService {
         }
     }
 
+    async getProposalsByCnes(cnes: string): Promise<Response<{ id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] }[]>> {
+        try {
+            const response = await api.get<Response<{ id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] }[]>>(`/proposal/proposals-by-cnes/${cnes}`);
+            response.data.status = true;
+            return response.data;
+        } catch (err: Response<undefined> | unknown) {
+            return this.goCatch<{ id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] }[]>(err);
+        }
+    }
+
     async getHistoricosByCnes(cnes: string): Promise<Response<{ id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] }[]>> {
         try {
             const response = await api.get<Response<{ id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] }[]>>(`/proposal/historicos-by-cnes/${cnes}`);

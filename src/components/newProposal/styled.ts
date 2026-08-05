@@ -79,6 +79,67 @@ export const InheritConfirm = styled.button`
     &:hover { background: #145030; }
 `;
 
+export const InheritDivider = styled.hr`
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 16px 0 12px;
+`;
+
+export const InheritViewActiveBtn = styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #1b5e3b;
+    background: #f0faf4;
+    color: #1b5e3b;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 12px;
+    &:hover { background: #e0f2e9; }
+`;
+
+export const InheritHistoricoList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+`;
+
+export const InheritHistoricoRow = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f7f7fb;
+    border-radius: 8px;
+    padding: 7px 10px;
+    gap: 8px;
+`;
+
+export const InheritHistoricoLabel = styled.span`
+    font-size: 0.82rem;
+    color: #333;
+    font-weight: 500;
+    flex: 1;
+`;
+
+export const InheritHistoricoBtn = styled.button`
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #3949ab;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    &:hover { background: #283593; }
+`;
+
 export const Container = styled.div`
     background-color: ${({ theme }) => theme.colors.grayBackground};
     height: 81vh;
