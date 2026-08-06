@@ -30,10 +30,8 @@ interface ContextData {
     proposals: SimpleProposal[];
 }
 
-const STATES_GEO =
-    "https://raw.githubusercontent.com/giuliano-macedo/geodata-br-states/main/geojson/br_states.json";
-const MUN_GEO = (code: number) =>
-    `https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-${code}-mun.json`;
+const STATES_GEO = "/br_states.json";
+const MUN_GEO = (code: number) => `/geojson/geojs-${code}-mun.json`;
 
 const STATE_CFG: Record<string, { center: [number, number]; scale: number; ibge: number }> = {
     AC: { center: [-70.5, -9.0],  scale: 2200,  ibge: 12 },
@@ -249,7 +247,7 @@ const MunLayer = React.memo(function MunLayer({
     );
 });
 
-interface TooltipData { x: number; y: number; name: string; count: number; uf?: string; }
+interface TooltipData { x: number; y: number; name: string; count: number; countAtivas: number; countPropostas: number; uf?: string; }
 
 export default function MapaComponent() {
     const router = useRouter();
@@ -289,7 +287,7 @@ export default function MapaComponent() {
 
     useEffect(() => {
         proposalService.getSimpleProposal().then((r) => {
-            if (r.status) setProposals(r.data);
+            if (r.status) setProposals(r.data.filter((p) => p.situacao !== "Histórico"));
             setLoading(false);
         });
     }, []);
@@ -366,11 +364,43 @@ export default function MapaComponent() {
         return m;
     }, [filtered]);
 
+    const countAtivasByUF = useMemo(() => {
+        const m: Record<string, number> = {};
+        filtered.filter((p) => p.situacao === "Proposta concluída")
+            .forEach((p) => { const s = ufToSigla(p.uf_estabelecimento); m[s] = (m[s] ?? 0) + 1; });
+        return m;
+    }, [filtered]);
+
+    const countPropostasByUF = useMemo(() => {
+        const m: Record<string, number> = {};
+        filtered.filter((p) => p.situacao !== "Proposta concluída")
+            .forEach((p) => { const s = ufToSigla(p.uf_estabelecimento); m[s] = (m[s] ?? 0) + 1; });
+        return m;
+    }, [filtered]);
+
     const countByMun = useMemo(() => {
         if (!selectedUF) return {} as Record<string, number>;
         const m: Record<string, number> = {};
         filtered
             .filter((p) => ufToSigla(p.uf_estabelecimento) === selectedUF)
+            .forEach((p) => { const k = norm(p.municipio); m[k] = (m[k] ?? 0) + 1; });
+        return m;
+    }, [filtered, selectedUF]);
+
+    const countAtivasByMun = useMemo(() => {
+        if (!selectedUF) return {} as Record<string, number>;
+        const m: Record<string, number> = {};
+        filtered
+            .filter((p) => ufToSigla(p.uf_estabelecimento) === selectedUF && p.situacao === "Proposta concluída")
+            .forEach((p) => { const k = norm(p.municipio); m[k] = (m[k] ?? 0) + 1; });
+        return m;
+    }, [filtered, selectedUF]);
+
+    const countPropostasByMun = useMemo(() => {
+        if (!selectedUF) return {} as Record<string, number>;
+        const m: Record<string, number> = {};
+        filtered
+            .filter((p) => ufToSigla(p.uf_estabelecimento) === selectedUF && p.situacao !== "Proposta concluída")
             .forEach((p) => { const k = norm(p.municipio); m[k] = (m[k] ?? 0) + 1; });
         return m;
     }, [filtered, selectedUF]);
@@ -444,8 +474,8 @@ export default function MapaComponent() {
         (geo: GeoFeature, e: React.MouseEvent<SVGPathElement>) => {
             const sigla = (geo.properties.SIGLA ?? geo.properties.sigla ?? geo.properties.id ?? "") as string;
             const nome  = (geo.properties.NOME  ?? geo.properties.nome  ?? sigla) as string;
-            setTooltip({ x: e.clientX, y: e.clientY, name: nome, count: countByUF[sigla] ?? 0, uf: sigla });
-        }, [countByUF]);
+            setTooltip({ x: e.clientX, y: e.clientY, name: nome, count: countByUF[sigla] ?? 0, countAtivas: countAtivasByUF[sigla] ?? 0, countPropostas: countPropostasByUF[sigla] ?? 0, uf: sigla });
+        }, [countByUF, countAtivasByUF, countPropostasByUF]);
 
     const onStateMove = useCallback((_geo: GeoFeature, e: React.MouseEvent<SVGPathElement>) => {
         setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
@@ -454,8 +484,9 @@ export default function MapaComponent() {
     const onMunEnter = useCallback(
         (geo: GeoFeature, e: React.MouseEvent<SVGPathElement>) => {
             const munName = (geo.properties.name ?? geo.properties.nome ?? "") as string;
-            setTooltip({ x: e.clientX, y: e.clientY, name: munName, count: countByMun[norm(munName)] ?? 0 });
-        }, [countByMun]);
+            const k = norm(munName);
+            setTooltip({ x: e.clientX, y: e.clientY, name: munName, count: countByMun[k] ?? 0, countAtivas: countAtivasByMun[k] ?? 0, countPropostas: countPropostasByMun[k] ?? 0 });
+        }, [countByMun, countAtivasByMun, countPropostasByMun]);
 
     const onMunMove = useCallback((_geo: GeoFeature, e: React.MouseEvent<SVGPathElement>) => {
         setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
@@ -628,10 +659,13 @@ export default function MapaComponent() {
             </Main>
 
             {tooltip && !contextData && (
-                <Tooltip style={{ left: tooltip.x + 14, top: tooltip.y - 70 }}>
+                <Tooltip style={{ left: tooltip.x + 14, top: tooltip.y - 90 }}>
                     <TooltipTitle>{tooltip.name}{tooltip.uf ? ` (${tooltip.uf})` : ""}</TooltipTitle>
                     <TooltipRow>
-                        Habilitações <TooltipValue>{tooltip.count}</TooltipValue>
+                        Hab. Ativas <TooltipValue style={{ color: "#1b5e3b" }}>{tooltip.countAtivas}</TooltipValue>
+                    </TooltipRow>
+                    <TooltipRow>
+                        Em Proposta <TooltipValue style={{ color: "#1565c0" }}>{tooltip.countPropostas}</TooltipValue>
                     </TooltipRow>
                     {tooltip.uf && (
                         <TooltipRow style={{ marginTop: 2, fontSize: "0.7rem", fontStyle: "italic" }}>

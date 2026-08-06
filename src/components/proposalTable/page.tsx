@@ -15,7 +15,13 @@ import {
     CustomTableTR,
     FilterContainer,
     FilterMenu,
+    FilterMenuHeader,
+    FilterMenuFooter,
+    FilterSearchBox,
+    FilterSelectAllRow,
+    FilterOptionsList,
     FilterOption,
+    FilterOkButton,
     HabBlock,
     HabChip,
     HabChipRow,
@@ -31,7 +37,7 @@ import {
     Title,
     TitleTwo,
 } from "./styled";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 import { Funnel } from "lucide-react";
@@ -102,12 +108,31 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
     const [searchValue, setSearchValue] = useState("");
 
     const [openFilter, setOpenFilter] = useState<ColumnKey | null>(null);
-
+    const [filterSearch, setFilterSearch] = useState("");
+    const [pendingFilters, setPendingFilters] = useState<Partial<Record<ColumnKey, string[]>>>({});
     const [columnFilters, setColumnFilters] = useState<Partial<Record<ColumnKey, string[]>>>({});
 
-    function resetPage() {
-        setCurrentPage(1);
+    function openFilterMenu(column: ColumnKey) {
+        setOpenFilter(column);
+        setFilterSearch("");
+        setPendingFilters({ ...columnFilters });
     }
+
+    function applyFilter() {
+        setColumnFilters({ ...pendingFilters });
+        setOpenFilter(null);
+        resetPage();
+    }
+
+    function resetPage() { setCurrentPage(1); }
+
+    // Fecha o filtro ao clicar fora
+    useEffect(() => {
+        if (!openFilter) return;
+        const handler = () => setOpenFilter(null);
+        document.addEventListener("click", handler);
+        return () => document.removeEventListener("click", handler);
+    }, [openFilter]);
 
     const getFilterValue = (proposal: SimpleProposal, column: ColumnKey): string => {
         switch (column) {
@@ -358,59 +383,76 @@ export default function ProposalTable({ proposals, search = false, headerItens, 
                         {headerItens.map((hi, idx) => {
                             const column = columns[idx];
 
+                            const allValues = getColumnValues(column);
+                            const searchLower = filterSearch.toLowerCase();
+                            const visibleValues = filterSearch
+                                ? allValues.filter(v => v.toLowerCase().includes(searchLower))
+                                : allValues;
+                            const pending = pendingFilters[column] ?? [];
+                            const allChecked = visibleValues.length > 0 && visibleValues.every(v => pending.includes(v));
+                            const someChecked = visibleValues.some(v => pending.includes(v));
+
                             return (
                                 <CustomTableTH key={idx}>
                                     <FilterContainer>
-                                        <p
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-
-                                                setOpenFilter(openFilter === column ? null : column);
-                                            }}
-                                        >
+                                        <p onClick={(e) => { e.stopPropagation(); openFilter === column ? setOpenFilter(null) : openFilterMenu(column); }}>
                                             {hi}
-                                            <Funnel
-                                                size={16}
-                                                color={columnFilters[column]?.length ? "#1976d2" : undefined}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-
-                                                    setOpenFilter(openFilter === column ? null : column);
-                                                }}
-                                            />
+                                            <Funnel size={14} color={columnFilters[column]?.length ? "#217346" : "#888"} />
                                         </p>
 
                                         {openFilter === column && (
-                                            <FilterMenu>
-                                                {getColumnValues(column).map((value) => (
-                                                    <FilterOption key={value}>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={columnFilters[column]?.includes(value) ?? false}
-                                                            onChange={(e) => {
-                                                                const current = columnFilters[column] || [];
-                                                                setColumnFilters({
-                                                                    ...columnFilters,
-                                                                    [column]: e.target.checked
-                                                                        ? [...current, value]
-                                                                        : current.filter((v) => v !== value),
-                                                                });
-                                                                resetPage();
-                                                            }}
-                                                        />
+                                            <FilterMenu onClick={e => e.stopPropagation()}>
+                                                <FilterMenuHeader>Filtrar por {hi}</FilterMenuHeader>
 
-                                                        {value}
-                                                    </FilterOption>
-                                                ))}
+                                                <FilterSearchBox
+                                                    autoFocus
+                                                    placeholder="Pesquisar..."
+                                                    value={filterSearch}
+                                                    onChange={e => setFilterSearch(e.target.value)}
+                                                />
 
-                                                <ClearFilterButton
-                                                    onClick={() => {
-                                                        setColumnFilters({ ...columnFilters, [column]: [] });
-                                                        resetPage();
-                                                    }}
-                                                >
-                                                    Limpar filtro
-                                                </ClearFilterButton>
+                                                <FilterSelectAllRow>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={allChecked}
+                                                        ref={el => { if (el) el.indeterminate = !allChecked && someChecked; }}
+                                                        onChange={() => {
+                                                            const rest = pending.filter(v => !visibleValues.includes(v));
+                                                            setPendingFilters({
+                                                                ...pendingFilters,
+                                                                [column]: allChecked ? rest : [...rest, ...visibleValues],
+                                                            });
+                                                        }}
+                                                    />
+                                                    (Selecionar tudo)
+                                                </FilterSelectAllRow>
+
+                                                <FilterOptionsList>
+                                                    {visibleValues.map(value => (
+                                                        <FilterOption key={value}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={pending.includes(value)}
+                                                                onChange={e => {
+                                                                    setPendingFilters({
+                                                                        ...pendingFilters,
+                                                                        [column]: e.target.checked
+                                                                            ? [...pending, value]
+                                                                            : pending.filter(v => v !== value),
+                                                                    });
+                                                                }}
+                                                            />
+                                                            {value}
+                                                        </FilterOption>
+                                                    ))}
+                                                </FilterOptionsList>
+
+                                                <FilterMenuFooter>
+                                                    <ClearFilterButton onClick={() => { setPendingFilters({ ...pendingFilters, [column]: [] }); setFilterSearch(""); }}>
+                                                        Limpar
+                                                    </ClearFilterButton>
+                                                    <FilterOkButton onClick={applyFilter}>OK</FilterOkButton>
+                                                </FilterMenuFooter>
                                             </FilterMenu>
                                         )}
                                     </FilterContainer>

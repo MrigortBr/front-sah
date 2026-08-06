@@ -136,65 +136,122 @@ export const FilterContainer = styled.div`
 
     & > p {
         display: flex;
-        cursor: pointer;
+        align-items: center;
         justify-content: center;
+        gap: 4px;
+        cursor: pointer;
         flex-wrap: nowrap;
+        user-select: none;
         & > svg {
             height: ${({ theme }) => theme.fontSizes.sm};
             cursor: pointer;
+            flex-shrink: 0;
         }
     }
 `;
 
 export const FilterMenu = styled.div`
     position: absolute;
-    top: 100%;
-    right: 0;
-
-    min-width: 220px;
-    max-height: 300px;
-
-    overflow-y: auto;
-
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-
-    padding: 10px;
-
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 240px;
+    width: max-content;
+    max-width: 320px;
+    background: #fff;
+    border: 1px solid #b0b8c9;
+    border-radius: 4px;
     z-index: 999999;
-
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    overflow: hidden;
+`;
+
+export const FilterMenuHeader = styled.div`
+    background: #217346;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    letter-spacing: 0.03em;
+`;
+
+export const FilterSearchBox = styled.input`
+    margin: 8px 8px 4px;
+    padding: 5px 8px;
+    border: 1px solid #b0b8c9;
+    border-radius: 3px;
+    font-size: 12px;
+    outline: none;
+    &:focus { border-color: #217346; }
+`;
+
+export const FilterSelectAllRow = styled.label`
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 2px;
+    user-select: none;
+    input[type="checkbox"] { accent-color: #217346; }
+`;
+
+export const FilterOptionsList = styled.div`
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 2px 0;
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 `;
 
 export const FilterOption = styled.label`
     display: flex;
     align-items: center;
-    gap: 8px;
-
+    gap: 7px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: #222;
     cursor: pointer;
-    font-size: 13px;
+    user-select: none;
+    &:hover { background: #e8f5e9; }
+    input[type="checkbox"] { accent-color: #217346; flex-shrink: 0; }
+`;
+
+export const FilterMenuFooter = styled.div`
+    display: flex;
+    gap: 6px;
+    padding: 8px 10px;
+    border-top: 1px solid #e0e0e0;
+    justify-content: flex-end;
+`;
+
+export const FilterOkButton = styled.button`
+    padding: 4px 18px;
+    background: #217346;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { background: #185c38; }
 `;
 
 export const ClearFilterButton = styled.button`
-    border: none;
-
-    margin-top: 10px;
-    padding: 8px;
-
-    border-radius: 6px;
-
+    padding: 4px 12px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #b0b8c9;
+    border-radius: 3px;
+    font-size: 12px;
     cursor: pointer;
-
-    background: #f5f5f5;
-
-    &:hover {
-        background: #e9e9e9;
-    }
+    &:hover { background: #f5f5f5; }
 `;
 
 export const PaginationContainer = styled.div`

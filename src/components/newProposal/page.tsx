@@ -37,6 +37,7 @@ export default function NewProposalActive() {
     const [selectedHabs, setSelectedHabs] = useState<TypeHab[]>([]);
     const [availableEstabs, setAvailableEstabs] = useState<EstabInfo[]>([]);
     const [activeInfo, setActiveInfo] = useState<{ id: number; codigos: string[] } | null>(null);
+    const [activesList, setActivesList] = useState<{ id: number; codigos: string[] }[]>([]);
     const [showInheritModal, setShowInheritModal] = useState(false);
 
     type HistoricoHab = { id: number; situacao: string; inicioSaips: string | null; numeroSaips: string; codigos: string[] };
@@ -96,12 +97,26 @@ export default function NewProposalActive() {
 
             const cnes = response.data?.cnes;
             if (cnes) {
-                const [histRes, activeRes] = await Promise.all([
+                // Coleta todos os CNES da proposta: principal + estabelecimentos vinculados
+                const allCnes = [...new Set(
+                    [cnes, ...(response.data.habEstabelecimentos?.map(e => e.cnes) ?? [])]
+                        .map(c => c.trim()).filter(Boolean)
+                )];
+
+                const [histRes, ...activeResults] = await Promise.all([
                     proposalService.getHistoricosByCnes(cnes),
-                    proposalService.getActiveByCnes(cnes),
+                    ...allCnes.map(c => proposalService.getActiveByCnes(c)),
                 ]);
+
                 if (histRes.status && Array.isArray(histRes.data)) setHistoricos(histRes.data);
-                if (activeRes.status && activeRes.data) setActiveInfo(activeRes.data);
+
+                const actives = activeResults
+                    .filter(r => r.status && r.data)
+                    .map(r => r.data!)
+                    // dedup por id
+                    .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i);
+                setActivesList(actives);
+                if (actives.length > 0) setActiveInfo(actives[0]);
             }
         };
 
@@ -123,6 +138,7 @@ export default function NewProposalActive() {
         }
         if (activeRes.status && activeRes.data) {
             setActiveInfo(activeRes.data);
+            setActivesList([activeRes.data]);
             setShowInheritModal(true);
         }
     }
@@ -254,16 +270,16 @@ export default function NewProposalActive() {
                 />
                 <History response={dataForm} refContainer={sectionRef6} ref={historyRef} />
 
-                {(activeInfo || historicos.length > 0) && (() => {
+                {(activesList.length > 0 || historicos.length > 0) && (() => {
                     const historicosFiltered = historicos.filter((h) => h.id !== dataForm?.id_habilitacao);
-                    const total = (activeInfo ? 1 : 0) + historicosFiltered.length;
+                    const total = activesList.length + historicosFiltered.length;
                     return (
                         <HistoricoSection>
                             <HistoricoSectionTitle>📋 Histórico de Habilitações ({total})</HistoricoSectionTitle>
 
-                            {/* Habilitação ativa */}
-                            {activeInfo && (
-                                <HistoricoRow key={`active-${activeInfo.id}`}>
+                            {/* Uma linha por habilitação ativa encontrada */}
+                            {activesList.map((active) => (
+                                <HistoricoRow key={`active-${active.id}`}>
                                     <HistoricoInfo>
                                         <HistoricoLabel>Situação</HistoricoLabel>
                                         <HistoricoValue style={{ color: "#1b5e3b" }}>✅ Ativa</HistoricoValue>
@@ -271,8 +287,8 @@ export default function NewProposalActive() {
                                     <HistoricoInfo>
                                         <HistoricoLabel>Códigos</HistoricoLabel>
                                         <HistoricoCodigosList>
-                                            {activeInfo.codigos.length > 0
-                                                ? activeInfo.codigos.map((c) => (
+                                            {active.codigos.length > 0
+                                                ? active.codigos.map((c) => (
                                                       <HistoricoCodigoBadge key={c} style={{ background: "#e8f5e9", color: "#1b5e3b" }}>{c}</HistoricoCodigoBadge>
                                                   ))
                                                 : <HistoricoLabel>Sem códigos</HistoricoLabel>
@@ -281,12 +297,12 @@ export default function NewProposalActive() {
                                     </HistoricoInfo>
                                     <HistoricoVerBtn
                                         style={{ background: "#1b5e3b" }}
-                                        onClick={() => window.open(`/ativos/ler?id=${activeInfo.id}`, "_blank")}
+                                        onClick={() => window.open(`/ativos/ler?id=${active.id}`, "_blank")}
                                     >
                                         Ver ativa
                                     </HistoricoVerBtn>
                                 </HistoricoRow>
-                            )}
+                            ))}
 
                             {/* Históricos */}
                             {historicosFiltered.length === 0 && !activeInfo ? (
@@ -328,7 +344,7 @@ export default function NewProposalActive() {
                         <InheritTitle>⚠️ Habilitação ativa encontrada</InheritTitle>
                         <InheritSubtitle>
                             Este CNES já possui uma habilitação ativa com os seguintes códigos.
-                            Deseja herdar os dados dela para este formulário?
+                            Deseja manter esta habilitação como base da nova proposta?
                         </InheritSubtitle>
                         <InheritCodes>
                             {activeInfo.codigos.map((c) => (
@@ -370,7 +386,7 @@ export default function NewProposalActive() {
                                 Não, começar do zero
                             </InheritCancel>
                             <InheritConfirm onClick={handleInheritConfirm}>
-                                Sim, herdar dados
+                                Sim, manter habilitação
                             </InheritConfirm>
                         </InheritActions>
                     </InheritCard>
